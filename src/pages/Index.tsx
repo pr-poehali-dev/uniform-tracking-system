@@ -790,6 +790,154 @@ const Index = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>Статистика по размерам для заказа</CardTitle>
+                  <CardDescription>Сколько каких размеров нужно заказать в {selectedMonth}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="font-semibold mb-4 flex items-center gap-2">
+                        <Icon name="Shirt" size={18} className="text-primary" />
+                        Футболки
+                      </h4>
+                      <div className="space-y-2">
+                        {(() => {
+                          const sizeCounts: Record<string, number> = {};
+                          employees.forEach(emp => {
+                            if (getConditionForMonth(emp.uniform.tshirt, selectedMonth) === 'needs_replacement') {
+                              const size = emp.uniform.tshirt.size;
+                              sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                            }
+                          });
+                          return Object.entries(sizeCounts).map(([size, count]) => (
+                            <div key={size} className="flex justify-between items-center p-3 rounded-lg bg-secondary/30">
+                              <span className="font-medium">Размер {size}</span>
+                              <Badge variant="secondary" className="bg-primary text-white">
+                                {count} шт
+                              </Badge>
+                            </div>
+                          ));
+                        })()}
+                        {(() => {
+                          const sizeCounts: Record<string, number> = {};
+                          employees.forEach(emp => {
+                            if (getConditionForMonth(emp.uniform.tshirt, selectedMonth) === 'needs_replacement') {
+                              const size = emp.uniform.tshirt.size;
+                              sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                            }
+                          });
+                          return Object.keys(sizeCounts).length === 0 ? (
+                            <div className="text-muted-foreground text-sm">Нет футболок для заказа</div>
+                          ) : null;
+                        })()}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold mb-4 flex items-center gap-2">
+                        <Icon name="User" size={18} className="text-primary" />
+                        Штаны
+                      </h4>
+                      <div className="space-y-2">
+                        {(() => {
+                          const sizeCounts: Record<string, number> = {};
+                          employees.forEach(emp => {
+                            if (getConditionForMonth(emp.uniform.pants, selectedMonth) === 'needs_replacement') {
+                              const size = emp.uniform.pants.size;
+                              sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                            }
+                          });
+                          return Object.entries(sizeCounts).map(([size, count]) => (
+                            <div key={size} className="flex justify-between items-center p-3 rounded-lg bg-secondary/30">
+                              <span className="font-medium">Размер {size}</span>
+                              <Badge variant="secondary" className="bg-primary text-white">
+                                {count} шт
+                              </Badge>
+                            </div>
+                          ));
+                        })()}
+                        {(() => {
+                          const sizeCounts: Record<string, number> = {};
+                          employees.forEach(emp => {
+                            if (getConditionForMonth(emp.uniform.pants, selectedMonth) === 'needs_replacement') {
+                              const size = emp.uniform.pants.size;
+                              sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                            }
+                          });
+                          return Object.keys(sizeCounts).length === 0 ? (
+                            <div className="text-muted-foreground text-sm">Нет штанов для заказа</div>
+                          ) : null;
+                        })()}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold mb-4 flex items-center gap-2">
+                        <Icon name="Component" size={18} className="text-primary" />
+                        Кителя
+                      </h4>
+                      <div className="space-y-2">
+                        {(() => {
+                          const sizeCounts: Record<string, number> = {};
+                          employees.forEach(emp => {
+                            if (getConditionForMonth(emp.uniform.jacket, selectedMonth) === 'needs_replacement') {
+                              const size = emp.uniform.jacket.size;
+                              sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                            }
+                          });
+                          return Object.entries(sizeCounts).map(([size, count]) => (
+                            <div key={size} className="flex justify-between items-center p-3 rounded-lg bg-secondary/30">
+                              <span className="font-medium">Размер {size}</span>
+                              <Badge variant="secondary" className="bg-primary text-white">
+                                {count} шт
+                              </Badge>
+                            </div>
+                          ));
+                        })()}
+                        {(() => {
+                          const sizeCounts: Record<string, number> = {};
+                          employees.forEach(emp => {
+                            if (getConditionForMonth(emp.uniform.jacket, selectedMonth) === 'needs_replacement') {
+                              const size = emp.uniform.jacket.size;
+                              sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                            }
+                          });
+                          return Object.keys(sizeCounts).length === 0 ? (
+                            <div className="text-muted-foreground text-sm">Нет кителей для заказа</div>
+                          ) : null;
+                        })()}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold mb-4 flex items-center gap-2">
+                        <Icon name="BadgeCheck" size={18} className="text-primary" />
+                        Бейджики
+                      </h4>
+                      <div className="space-y-2">
+                        {(() => {
+                          const badgeCount = employees.filter(emp => 
+                            getConditionForMonth(emp.uniform.badge, selectedMonth) === 'needs_replacement'
+                          ).length;
+                          return badgeCount > 0 ? (
+                            <div className="flex justify-between items-center p-3 rounded-lg bg-secondary/30">
+                              <span className="font-medium">Всего</span>
+                              <Badge variant="secondary" className="bg-primary text-white">
+                                {badgeCount} шт
+                              </Badge>
+                            </div>
+                          ) : (
+                            <div className="text-muted-foreground text-sm">Нет бейджиков для заказа</div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>
