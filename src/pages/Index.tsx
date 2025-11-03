@@ -809,7 +809,9 @@ const Index = () => {
                           employees.forEach(emp => {
                             if (getConditionForMonth(emp.uniform.tshirt, selectedMonth) === 'needs_replacement') {
                               const size = emp.uniform.tshirt.size;
-                              sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                              if (size !== 'not_needed') {
+                                sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                              }
                             }
                           });
                           return Object.entries(sizeCounts).map(([size, count]) => (
@@ -847,7 +849,9 @@ const Index = () => {
                           employees.forEach(emp => {
                             if (getConditionForMonth(emp.uniform.pants, selectedMonth) === 'needs_replacement') {
                               const size = emp.uniform.pants.size;
-                              sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                              if (size !== 'not_needed') {
+                                sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                              }
                             }
                           });
                           return Object.entries(sizeCounts).map(([size, count]) => (
@@ -885,7 +889,9 @@ const Index = () => {
                           employees.forEach(emp => {
                             if (getConditionForMonth(emp.uniform.jacket, selectedMonth) === 'needs_replacement') {
                               const size = emp.uniform.jacket.size;
-                              sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                              if (size !== 'not_needed') {
+                                sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                              }
                             }
                           });
                           return Object.entries(sizeCounts).map(([size, count]) => (
