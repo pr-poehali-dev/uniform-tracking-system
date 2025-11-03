@@ -256,7 +256,6 @@ const Index = () => {
             <Icon name="ShieldCheck" size={40} />
             Учёт формы сотрудников
           </h1>
-          <p className="text-muted-foreground">Управление и заказ спецодежды</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
@@ -373,32 +372,55 @@ const Index = () => {
                             const condition = getConditionForMonth(emp.uniform[type], selectedMonth);
                             return (
                               <TableCell key={type}>
-                                <div className="flex gap-1">
-                                  <Button
-                                    size="sm"
-                                    variant={condition === 'good' ? 'default' : 'outline'}
-                                    className={condition === 'good' ? conditionColors.good + ' text-white hover:bg-[#2E8B57]/90' : ''}
-                                    onClick={() => updateCondition(emp.id, type, 'good')}
-                                  >
-                                    <Icon name="ThumbsUp" size={14} />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant={condition === 'bad' ? 'default' : 'outline'}
-                                    className={condition === 'bad' ? conditionColors.bad + ' text-white hover:bg-[#DC143C]/90' : ''}
-                                    onClick={() => updateCondition(emp.id, type, 'bad')}
-                                  >
-                                    <Icon name="ThumbsDown" size={14} />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant={condition === 'needs_replacement' ? 'default' : 'outline'}
-                                    className={condition === 'needs_replacement' ? conditionColors.needs_replacement + ' text-white hover:bg-[#FF8C00]/90' : ''}
-                                    onClick={() => updateCondition(emp.id, type, 'needs_replacement')}
-                                  >
-                                    <Icon name="AlertCircle" size={14} />
-                                  </Button>
-                                </div>
+                                <Select
+                                  value={condition || ''}
+                                  onValueChange={(value) =>
+                                    updateCondition(emp.id, type, value as UniformCondition)
+                                  }
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Не выбрано">
+                                      {condition === 'good' && (
+                                        <span className="flex items-center gap-2">
+                                          <Icon name="Check" size={16} className="text-[#2E8B57]" />
+                                          Хорошее
+                                        </span>
+                                      )}
+                                      {condition === 'bad' && (
+                                        <span className="flex items-center gap-2">
+                                          <Icon name="X" size={16} className="text-[#DC143C]" />
+                                          Плохое
+                                        </span>
+                                      )}
+                                      {condition === 'needs_replacement' && (
+                                        <span className="flex items-center gap-2">
+                                          <Icon name="AlertCircle" size={16} className="text-[#FF8C00]" />
+                                          Нужно новое
+                                        </span>
+                                      )}
+                                    </SelectValue>
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="good">
+                                      <span className="flex items-center gap-2">
+                                        <Icon name="Check" size={16} className="text-[#2E8B57]" />
+                                        Хорошее
+                                      </span>
+                                    </SelectItem>
+                                    <SelectItem value="bad">
+                                      <span className="flex items-center gap-2">
+                                        <Icon name="X" size={16} className="text-[#DC143C]" />
+                                        Плохое
+                                      </span>
+                                    </SelectItem>
+                                    <SelectItem value="needs_replacement">
+                                      <span className="flex items-center gap-2">
+                                        <Icon name="AlertCircle" size={16} className="text-[#FF8C00]" />
+                                        Нужно новое
+                                      </span>
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
                               </TableCell>
                             );
                           })}
