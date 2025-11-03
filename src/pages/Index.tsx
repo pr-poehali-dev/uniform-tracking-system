@@ -380,7 +380,7 @@ const Index = () => {
                                     className={condition === 'good' ? conditionColors.good + ' text-white hover:bg-[#2E8B57]/90' : ''}
                                     onClick={() => updateCondition(emp.id, type, 'good')}
                                   >
-                                    ✓
+                                    <Icon name="ThumbsUp" size={14} />
                                   </Button>
                                   <Button
                                     size="sm"
@@ -388,7 +388,7 @@ const Index = () => {
                                     className={condition === 'bad' ? conditionColors.bad + ' text-white hover:bg-[#DC143C]/90' : ''}
                                     onClick={() => updateCondition(emp.id, type, 'bad')}
                                   >
-                                    ✗
+                                    <Icon name="ThumbsDown" size={14} />
                                   </Button>
                                   <Button
                                     size="sm"
@@ -396,7 +396,7 @@ const Index = () => {
                                     className={condition === 'needs_replacement' ? conditionColors.needs_replacement + ' text-white hover:bg-[#FF8C00]/90' : ''}
                                     onClick={() => updateCondition(emp.id, type, 'needs_replacement')}
                                   >
-                                    !
+                                    <Icon name="AlertCircle" size={14} />
                                   </Button>
                                 </div>
                               </TableCell>
@@ -461,6 +461,7 @@ const Index = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="not_needed">Не нужно</SelectItem>
                           <SelectItem value="XS">XS</SelectItem>
                           <SelectItem value="S">S</SelectItem>
                           <SelectItem value="M">M</SelectItem>
@@ -485,6 +486,7 @@ const Index = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="not_needed">Не нужно</SelectItem>
                           <SelectItem value="1">Размер 1</SelectItem>
                           <SelectItem value="2">Размер 2</SelectItem>
                           <SelectItem value="3">Размер 3</SelectItem>
@@ -507,6 +509,7 @@ const Index = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="not_needed">Не нужно</SelectItem>
                           <SelectItem value="1">Размер 1</SelectItem>
                           <SelectItem value="2">Размер 2</SelectItem>
                           <SelectItem value="3">Размер 3</SelectItem>
