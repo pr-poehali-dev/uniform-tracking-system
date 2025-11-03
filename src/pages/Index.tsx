@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -8,16 +8,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 
 type UniformCondition = 'good' | 'bad' | 'needs_replacement';
 type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | '1' | '2' | '3' | 'needed' | 'not_needed';
 
+interface MonthlyRecord {
+  month: string;
+  condition: UniformCondition;
+}
+
 interface UniformItem {
   type: 'tshirt' | 'pants' | 'jacket' | 'badge';
-  condition: UniformCondition;
   size: Size;
-  isOrdered: boolean;
-  orderDate?: string;
+  monthlyRecords: MonthlyRecord[];
 }
 
 interface Employee {
@@ -31,63 +35,53 @@ interface Employee {
   };
 }
 
+const MONTHS = [
+  'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+];
+
+const getCurrentMonth = () => {
+  const date = new Date();
+  return MONTHS[date.getMonth()];
+};
+
 const initialEmployees: Employee[] = [
   {
     id: 1,
-    name: 'Иванов Иван',
+    name: 'Сотрудник 1',
     uniform: {
-      tshirt: { type: 'tshirt', condition: 'good', size: 'M', isOrdered: false },
-      pants: { type: 'pants', condition: 'bad', size: '2', isOrdered: false },
-      jacket: { type: 'jacket', condition: 'needs_replacement', size: '2', isOrdered: false },
-      badge: { type: 'badge', condition: 'good', size: 'needed', isOrdered: false },
+      tshirt: { type: 'tshirt', size: 'M', monthlyRecords: [] },
+      pants: { type: 'pants', size: '2', monthlyRecords: [] },
+      jacket: { type: 'jacket', size: '2', monthlyRecords: [] },
+      badge: { type: 'badge', size: 'needed', monthlyRecords: [] },
     },
   },
   {
     id: 2,
-    name: 'Петрова Анна',
+    name: 'Сотрудник 2',
     uniform: {
-      tshirt: { type: 'tshirt', condition: 'needs_replacement', size: 'S', isOrdered: false },
-      pants: { type: 'pants', condition: 'good', size: '1', isOrdered: false },
-      jacket: { type: 'jacket', condition: 'good', size: '1', isOrdered: false },
-      badge: { type: 'badge', condition: 'needs_replacement', size: 'needed', isOrdered: false },
+      tshirt: { type: 'tshirt', size: 'S', monthlyRecords: [] },
+      pants: { type: 'pants', size: '1', monthlyRecords: [] },
+      jacket: { type: 'jacket', size: '1', monthlyRecords: [] },
+      badge: { type: 'badge', size: 'needed', monthlyRecords: [] },
     },
   },
   {
     id: 3,
-    name: 'Сидоров Петр',
+    name: 'Сотрудник 3',
     uniform: {
-      tshirt: { type: 'tshirt', condition: 'bad', size: 'L', isOrdered: false },
-      pants: { type: 'pants', condition: 'needs_replacement', size: '3', isOrdered: false },
-      jacket: { type: 'jacket', condition: 'good', size: '3', isOrdered: false },
-      badge: { type: 'badge', condition: 'good', size: 'needed', isOrdered: false },
-    },
-  },
-  {
-    id: 4,
-    name: 'Козлова Мария',
-    uniform: {
-      tshirt: { type: 'tshirt', condition: 'good', size: 'S', isOrdered: false },
-      pants: { type: 'pants', condition: 'good', size: '1', isOrdered: false },
-      jacket: { type: 'jacket', condition: 'bad', size: '1', isOrdered: false },
-      badge: { type: 'badge', condition: 'good', size: 'needed', isOrdered: false },
-    },
-  },
-  {
-    id: 5,
-    name: 'Смирнов Алексей',
-    uniform: {
-      tshirt: { type: 'tshirt', condition: 'needs_replacement', size: 'XL', isOrdered: false },
-      pants: { type: 'pants', condition: 'bad', size: '3', isOrdered: false },
-      jacket: { type: 'jacket', condition: 'needs_replacement', size: '3', isOrdered: false },
-      badge: { type: 'badge', condition: 'bad', size: 'needed', isOrdered: false },
+      tshirt: { type: 'tshirt', size: 'L', monthlyRecords: [] },
+      pants: { type: 'pants', size: '3', monthlyRecords: [] },
+      jacket: { type: 'jacket', size: '3', monthlyRecords: [] },
+      badge: { type: 'badge', size: 'needed', monthlyRecords: [] },
     },
   },
 ];
 
 const conditionColors = {
-  good: 'bg-[#2E8B57] hover:bg-[#2E8B57]/90',
-  bad: 'bg-[#DC143C] hover:bg-[#DC143C]/90',
-  needs_replacement: 'bg-[#FF8C00] hover:bg-[#FF8C00]/90',
+  good: 'bg-[#2E8B57]',
+  bad: 'bg-[#DC143C]',
+  needs_replacement: 'bg-[#FF8C00]',
 };
 
 const conditionLabels = {
@@ -104,9 +98,13 @@ const uniformLabels = {
 };
 
 const Index = () => {
-  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
+  const [employees, setEmployees] = useState<Employee[]>(() => {
+    const saved = localStorage.getItem('employees');
+    return saved ? JSON.parse(saved) : initialEmployees;
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCondition, setFilterCondition] = useState<string>('all');
+  const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonth());
   const [selectedEmployee, setSelectedEmployee] = useState<string>('');
   const [orderForm, setOrderForm] = useState({
     tshirt: 'not_needed' as Size | 'not_needed',
@@ -115,89 +113,138 @@ const Index = () => {
     badge: 'not_needed' as Size | 'not_needed',
   });
 
+  useEffect(() => {
+    localStorage.setItem('employees', JSON.stringify(employees));
+  }, [employees]);
+
+  const getConditionForMonth = (item: UniformItem, month: string): UniformCondition | null => {
+    const record = item.monthlyRecords.find(r => r.month === month);
+    return record ? record.condition : null;
+  };
+
   const filteredEmployees = employees.filter((emp) => {
     const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase());
     if (!matchesSearch) return false;
 
     if (filterCondition === 'all') return true;
 
-    const hasCondition = Object.values(emp.uniform).some(
-      (item) => item.condition === filterCondition
-    );
+    const hasCondition = Object.values(emp.uniform).some((item) => {
+      const condition = getConditionForMonth(item, selectedMonth);
+      return condition === filterCondition;
+    });
     return hasCondition;
   });
 
   const updateCondition = (empId: number, uniformType: keyof Employee['uniform'], condition: UniformCondition) => {
     setEmployees((prev) =>
-      prev.map((emp) =>
-        emp.id === empId
-          ? {
-              ...emp,
-              uniform: {
-                ...emp.uniform,
-                [uniformType]: { ...emp.uniform[uniformType], condition },
-              },
-            }
-          : emp
-      )
-    );
-  };
-
-  const handleOrder = () => {
-    if (!selectedEmployee) {
-      toast.error('Выберите сотрудника');
-      return;
-    }
-
-    const hasItems = Object.values(orderForm).some((val) => val !== 'not_needed');
-    if (!hasItems) {
-      toast.error('Выберите хотя бы один предмет формы');
-      return;
-    }
-
-    const empId = parseInt(selectedEmployee);
-    setEmployees((prev) =>
       prev.map((emp) => {
         if (emp.id === empId) {
-          const updatedUniform = { ...emp.uniform };
-          Object.entries(orderForm).forEach(([key, value]) => {
-            if (value !== 'not_needed') {
-              updatedUniform[key as keyof Employee['uniform']] = {
-                ...updatedUniform[key as keyof Employee['uniform']],
-                size: value as Size,
-                isOrdered: true,
-                orderDate: new Date().toLocaleDateString('ru-RU'),
-              };
-            }
-          });
-          return { ...emp, uniform: updatedUniform };
+          const item = emp.uniform[uniformType];
+          const existingRecordIndex = item.monthlyRecords.findIndex(r => r.month === selectedMonth);
+          
+          let newRecords;
+          if (existingRecordIndex >= 0) {
+            newRecords = [...item.monthlyRecords];
+            newRecords[existingRecordIndex] = { month: selectedMonth, condition };
+          } else {
+            newRecords = [...item.monthlyRecords, { month: selectedMonth, condition }];
+          }
+
+          return {
+            ...emp,
+            uniform: {
+              ...emp.uniform,
+              [uniformType]: { ...item, monthlyRecords: newRecords },
+            },
+          };
         }
         return emp;
       })
     );
+    toast.success('Состояние обновлено');
+  };
 
-    toast.success(`Заказ оформлен для ${employees.find((e) => e.id === empId)?.name}`);
-    setOrderForm({
-      tshirt: 'not_needed',
-      pants: 'not_needed',
-      jacket: 'not_needed',
-      badge: 'not_needed',
+  const updateEmployeeName = (empId: number, newName: string) => {
+    setEmployees((prev) =>
+      prev.map((emp) => (emp.id === empId ? { ...emp, name: newName } : emp))
+    );
+  };
+
+  const addEmployee = () => {
+    const newId = Math.max(...employees.map(e => e.id), 0) + 1;
+    const newEmployee: Employee = {
+      id: newId,
+      name: `Сотрудник ${newId}`,
+      uniform: {
+        tshirt: { type: 'tshirt', size: 'M', monthlyRecords: [] },
+        pants: { type: 'pants', size: '2', monthlyRecords: [] },
+        jacket: { type: 'jacket', size: '2', monthlyRecords: [] },
+        badge: { type: 'badge', size: 'needed', monthlyRecords: [] },
+      },
+    };
+    setEmployees([...employees, newEmployee]);
+    toast.success('Сотрудник добавлен');
+  };
+
+  const deleteEmployee = (empId: number) => {
+    setEmployees((prev) => prev.filter(emp => emp.id !== empId));
+    toast.success('Сотрудник удален');
+  };
+
+  const updateSize = (empId: number, uniformType: keyof Employee['uniform'], size: Size) => {
+    setEmployees((prev) =>
+      prev.map((emp) => {
+        if (emp.id === empId) {
+          return {
+            ...emp,
+            uniform: {
+              ...emp.uniform,
+              [uniformType]: { ...emp.uniform[uniformType], size },
+            },
+          };
+        }
+        return emp;
+      })
+    );
+  };
+
+  const exportToExcel = () => {
+    const data: any[] = [];
+    
+    employees.forEach((emp) => {
+      const record = getConditionForMonth(emp.uniform.tshirt, selectedMonth);
+      const row: any = {
+        'Имя сотрудника': emp.name,
+        'Месяц': selectedMonth,
+      };
+
+      (['tshirt', 'pants', 'jacket', 'badge'] as const).forEach((type) => {
+        const item = emp.uniform[type];
+        const condition = getConditionForMonth(item, selectedMonth);
+        row[uniformLabels[type]] = condition ? conditionLabels[condition] : 'Не заполнено';
+        row[`${uniformLabels[type]} - Размер`] = item.size;
+      });
+
+      data.push(row);
     });
-    setSelectedEmployee('');
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, selectedMonth);
+    XLSX.writeFile(wb, `Отчет_${selectedMonth}_${new Date().toLocaleDateString('ru-RU')}.xlsx`);
+    toast.success('Отчет экспортирован в Excel');
   };
 
   const stats = {
     total: employees.length,
     needsReplacement: employees.filter((emp) =>
-      Object.values(emp.uniform).some((item) => item.condition === 'needs_replacement')
+      Object.values(emp.uniform).some((item) => getConditionForMonth(item, selectedMonth) === 'needs_replacement')
     ).length,
-    ordered: employees.filter((emp) => Object.values(emp.uniform).some((item) => item.isOrdered))
-      .length,
     byType: {
-      tshirt: employees.filter((emp) => emp.uniform.tshirt.condition === 'needs_replacement').length,
-      pants: employees.filter((emp) => emp.uniform.pants.condition === 'needs_replacement').length,
-      jacket: employees.filter((emp) => emp.uniform.jacket.condition === 'needs_replacement').length,
-      badge: employees.filter((emp) => emp.uniform.badge.condition === 'needs_replacement').length,
+      tshirt: employees.filter((emp) => getConditionForMonth(emp.uniform.tshirt, selectedMonth) === 'needs_replacement').length,
+      pants: employees.filter((emp) => getConditionForMonth(emp.uniform.pants, selectedMonth) === 'needs_replacement').length,
+      jacket: employees.filter((emp) => getConditionForMonth(emp.uniform.jacket, selectedMonth) === 'needs_replacement').length,
+      badge: employees.filter((emp) => getConditionForMonth(emp.uniform.badge, selectedMonth) === 'needs_replacement').length,
     },
   };
 
@@ -212,7 +259,7 @@ const Index = () => {
           <p className="text-muted-foreground">Управление и заказ спецодежды</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <Card className="border-2 border-primary/20 hover:shadow-lg transition-all">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -229,37 +276,11 @@ const Index = () => {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Icon name="AlertCircle" size={18} className="text-[#FF8C00]" />
-                Нужна замена
+                Нужна замена ({selectedMonth})
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-[#FF8C00]">{stats.needsReplacement}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-[#2E8B57]/20 hover:shadow-lg transition-all">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Icon name="ShoppingCart" size={18} className="text-[#2E8B57]" />
-                Оформлено заказов
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-[#2E8B57]">{stats.ordered}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-primary/20 hover:shadow-lg transition-all">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Icon name="TrendingUp" size={18} className="text-primary" />
-                Статус
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-primary">
-                {Math.round((stats.ordered / stats.total) * 100)}%
-              </div>
             </CardContent>
           </Card>
         </div>
@@ -283,8 +304,16 @@ const Index = () => {
           <TabsContent value="inventory" className="animate-fade-in">
             <Card>
               <CardHeader>
-                <CardTitle>Учёт состояния формы</CardTitle>
-                <CardDescription>Отслеживайте состояние формы каждого сотрудника</CardDescription>
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <CardTitle>Учёт состояния формы</CardTitle>
+                    <CardDescription>Отслеживайте состояние формы каждого сотрудника</CardDescription>
+                  </div>
+                  <Button onClick={addEmployee} className="flex items-center gap-2">
+                    <Icon name="UserPlus" size={18} />
+                    Добавить сотрудника
+                  </Button>
+                </div>
                 <div className="flex flex-col md:flex-row gap-4 mt-4">
                   <div className="flex-1">
                     <Input
@@ -294,6 +323,16 @@ const Index = () => {
                       className="w-full"
                     />
                   </div>
+                  <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                    <SelectTrigger className="w-full md:w-[200px]">
+                      <SelectValue placeholder="Выберите месяц" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MONTHS.map((month) => (
+                        <SelectItem key={month} value={month}>{month}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Select value={filterCondition} onValueChange={setFilterCondition}>
                     <SelectTrigger className="w-full md:w-[200px]">
                       <SelectValue placeholder="Фильтр по состоянию" />
@@ -317,39 +356,62 @@ const Index = () => {
                         <TableHead className="font-bold">Штаны</TableHead>
                         <TableHead className="font-bold">Китель</TableHead>
                         <TableHead className="font-bold">Бейджик</TableHead>
+                        <TableHead className="font-bold w-[100px]">Действия</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredEmployees.map((emp) => (
                         <TableRow key={emp.id} className="hover:bg-secondary/50 transition-colors">
-                          <TableCell className="font-medium">{emp.name}</TableCell>
-                          {(['tshirt', 'pants', 'jacket', 'badge'] as const).map((type) => (
-                            <TableCell key={type}>
-                              <Select
-                                value={emp.uniform[type].condition}
-                                onValueChange={(value) =>
-                                  updateCondition(emp.id, type, value as UniformCondition)
-                                }
-                              >
-                                <SelectTrigger
-                                  className={`w-full ${conditionColors[emp.uniform[type].condition]} text-white border-0`}
-                                >
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="good">Хорошее</SelectItem>
-                                  <SelectItem value="bad">Плохое</SelectItem>
-                                  <SelectItem value="needs_replacement">Нужно новое</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              {emp.uniform[type].isOrdered && (
-                                <Badge variant="outline" className="mt-1 text-xs">
-                                  <Icon name="Check" size={12} className="mr-1" />
-                                  Заказано
-                                </Badge>
-                              )}
-                            </TableCell>
-                          ))}
+                          <TableCell>
+                            <Input
+                              value={emp.name}
+                              onChange={(e) => updateEmployeeName(emp.id, e.target.value)}
+                              className="font-medium border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary"
+                            />
+                          </TableCell>
+                          {(['tshirt', 'pants', 'jacket', 'badge'] as const).map((type) => {
+                            const condition = getConditionForMonth(emp.uniform[type], selectedMonth);
+                            return (
+                              <TableCell key={type}>
+                                <div className="flex gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant={condition === 'good' ? 'default' : 'outline'}
+                                    className={condition === 'good' ? conditionColors.good + ' text-white hover:bg-[#2E8B57]/90' : ''}
+                                    onClick={() => updateCondition(emp.id, type, 'good')}
+                                  >
+                                    ✓
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant={condition === 'bad' ? 'default' : 'outline'}
+                                    className={condition === 'bad' ? conditionColors.bad + ' text-white hover:bg-[#DC143C]/90' : ''}
+                                    onClick={() => updateCondition(emp.id, type, 'bad')}
+                                  >
+                                    ✗
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant={condition === 'needs_replacement' ? 'default' : 'outline'}
+                                    className={condition === 'needs_replacement' ? conditionColors.needs_replacement + ' text-white hover:bg-[#FF8C00]/90' : ''}
+                                    onClick={() => updateCondition(emp.id, type, 'needs_replacement')}
+                                  >
+                                    !
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            );
+                          })}
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => deleteEmployee(emp.id)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Icon name="Trash2" size={16} />
+                            </Button>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -362,8 +424,8 @@ const Index = () => {
           <TabsContent value="order" className="animate-fade-in">
             <Card>
               <CardHeader>
-                <CardTitle>Оформить заказ формы</CardTitle>
-                <CardDescription>Выберите сотрудника и необходимые размеры</CardDescription>
+                <CardTitle>Заказать форму</CardTitle>
+                <CardDescription>Выберите сотрудника и укажите необходимые размеры</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
@@ -382,114 +444,128 @@ const Index = () => {
                   </Select>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                      <Icon name="Shirt" size={16} className="text-primary" />
-                      Футболка
-                    </label>
-                    <Select
-                      value={orderForm.tshirt}
-                      onValueChange={(value) =>
-                        setOrderForm((prev) => ({ ...prev, tshirt: value as Size }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="not_needed">Не нужно</SelectItem>
-                        <SelectItem value="XS">XS</SelectItem>
-                        <SelectItem value="S">S</SelectItem>
-                        <SelectItem value="M">M</SelectItem>
-                        <SelectItem value="L">L</SelectItem>
-                        <SelectItem value="XL">XL</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                {selectedEmployee && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                        <Icon name="Shirt" size={16} className="text-primary" />
+                        Футболка
+                      </label>
+                      <Select
+                        value={employees.find(e => e.id === parseInt(selectedEmployee))?.uniform.tshirt.size}
+                        onValueChange={(value) =>
+                          updateSize(parseInt(selectedEmployee), 'tshirt', value as Size)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="XS">XS</SelectItem>
+                          <SelectItem value="S">S</SelectItem>
+                          <SelectItem value="M">M</SelectItem>
+                          <SelectItem value="L">L</SelectItem>
+                          <SelectItem value="XL">XL</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div>
-                    <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                      <Icon name="User" size={16} className="text-primary" />
-                      Штаны
-                    </label>
-                    <Select
-                      value={orderForm.pants}
-                      onValueChange={(value) =>
-                        setOrderForm((prev) => ({ ...prev, pants: value as Size }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="not_needed">Не нужно</SelectItem>
-                        <SelectItem value="1">Размер 1</SelectItem>
-                        <SelectItem value="2">Размер 2</SelectItem>
-                        <SelectItem value="3">Размер 3</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                        <Icon name="User" size={16} className="text-primary" />
+                        Штаны
+                      </label>
+                      <Select
+                        value={employees.find(e => e.id === parseInt(selectedEmployee))?.uniform.pants.size}
+                        onValueChange={(value) =>
+                          updateSize(parseInt(selectedEmployee), 'pants', value as Size)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Размер 1</SelectItem>
+                          <SelectItem value="2">Размер 2</SelectItem>
+                          <SelectItem value="3">Размер 3</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div>
-                    <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                      <Icon name="Component" size={16} className="text-primary" />
-                      Китель
-                    </label>
-                    <Select
-                      value={orderForm.jacket}
-                      onValueChange={(value) =>
-                        setOrderForm((prev) => ({ ...prev, jacket: value as Size }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="not_needed">Не нужно</SelectItem>
-                        <SelectItem value="1">Размер 1</SelectItem>
-                        <SelectItem value="2">Размер 2</SelectItem>
-                        <SelectItem value="3">Размер 3</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                        <Icon name="Component" size={16} className="text-primary" />
+                        Китель
+                      </label>
+                      <Select
+                        value={employees.find(e => e.id === parseInt(selectedEmployee))?.uniform.jacket.size}
+                        onValueChange={(value) =>
+                          updateSize(parseInt(selectedEmployee), 'jacket', value as Size)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Размер 1</SelectItem>
+                          <SelectItem value="2">Размер 2</SelectItem>
+                          <SelectItem value="3">Размер 3</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div>
-                    <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                      <Icon name="BadgeCheck" size={16} className="text-primary" />
-                      Бейджик
-                    </label>
-                    <Select
-                      value={orderForm.badge}
-                      onValueChange={(value) =>
-                        setOrderForm((prev) => ({ ...prev, badge: value as Size }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="not_needed">Не нужно</SelectItem>
-                        <SelectItem value="needed">Нужен</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                        <Icon name="BadgeCheck" size={16} className="text-primary" />
+                        Бейджик
+                      </label>
+                      <Select
+                        value={employees.find(e => e.id === parseInt(selectedEmployee))?.uniform.badge.size}
+                        onValueChange={(value) =>
+                          updateSize(parseInt(selectedEmployee), 'badge', value as Size)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="needed">Нужен</SelectItem>
+                          <SelectItem value="not_needed">Не нужен</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                </div>
-
-                <Button onClick={handleOrder} className="w-full" size="lg">
-                  <Icon name="ShoppingCart" size={18} className="mr-2" />
-                  Оформить заказ
-                </Button>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="stats" className="animate-fade-in">
+            <div className="mb-6 flex justify-between items-center">
+              <div className="flex items-center gap-4">
+                <label className="text-sm font-medium">Месяц отчета:</label>
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MONTHS.map((month) => (
+                      <SelectItem key={month} value={month}>{month}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button onClick={exportToExcel} className="flex items-center gap-2">
+                <Icon name="FileDown" size={18} />
+                Экспорт в Excel
+              </Button>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Нужна замена по типам</CardTitle>
-                  <CardDescription>Количество предметов формы требующих замены</CardDescription>
+                  <CardDescription>Количество предметов формы требующих замены в {selectedMonth}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -503,7 +579,7 @@ const Index = () => {
                           <div className="h-2 bg-secondary rounded-full w-32 overflow-hidden">
                             <div
                               className="h-full bg-[#FF8C00] transition-all"
-                              style={{ width: `${(count / stats.total) * 100}%` }}
+                              style={{ width: `${stats.total > 0 ? (count / stats.total) * 100 : 0}%` }}
                             />
                           </div>
                           <span className="text-2xl font-bold text-[#FF8C00] w-8 text-right">{count}</span>
@@ -517,13 +593,13 @@ const Index = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Список сотрудников с заменой</CardTitle>
-                  <CardDescription>Требуется обновление формы</CardDescription>
+                  <CardDescription>Требуется обновление формы в {selectedMonth}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 max-h-[300px] overflow-y-auto">
                     {employees
                       .filter((emp) =>
-                        Object.values(emp.uniform).some((item) => item.condition === 'needs_replacement')
+                        Object.values(emp.uniform).some((item) => getConditionForMonth(item, selectedMonth) === 'needs_replacement')
                       )
                       .map((emp) => (
                         <div
@@ -533,7 +609,7 @@ const Index = () => {
                           <div className="font-medium mb-2">{emp.name}</div>
                           <div className="flex flex-wrap gap-2">
                             {Object.entries(emp.uniform)
-                              .filter(([_, item]) => item.condition === 'needs_replacement')
+                              .filter(([_, item]) => getConditionForMonth(item, selectedMonth) === 'needs_replacement')
                               .map(([type, _]) => (
                                 <Badge key={type} variant="outline" className="bg-white">
                                   {uniformLabels[type as keyof typeof uniformLabels]}
@@ -542,6 +618,13 @@ const Index = () => {
                           </div>
                         </div>
                       ))}
+                    {employees.filter((emp) =>
+                      Object.values(emp.uniform).some((item) => getConditionForMonth(item, selectedMonth) === 'needs_replacement')
+                    ).length === 0 && (
+                      <div className="text-center text-muted-foreground py-8">
+                        Нет сотрудников, требующих замену формы в этом месяце
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -549,7 +632,7 @@ const Index = () => {
               <Card className="md:col-span-2">
                 <CardHeader>
                   <CardTitle>Общая статистика по состоянию формы</CardTitle>
-                  <CardDescription>Распределение состояния всех предметов</CardDescription>
+                  <CardDescription>Распределение состояния всех предметов в {selectedMonth}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -557,11 +640,11 @@ const Index = () => {
                       const count = employees.reduce(
                         (acc, emp) =>
                           acc +
-                          Object.values(emp.uniform).filter((item) => item.condition === condition).length,
+                          Object.values(emp.uniform).filter((item) => getConditionForMonth(item, selectedMonth) === condition).length,
                         0
                       );
                       const total = employees.length * 4;
-                      const percentage = Math.round((count / total) * 100);
+                      const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
 
                       return (
                         <div
@@ -569,7 +652,7 @@ const Index = () => {
                           className="p-6 rounded-xl border-2 bg-gradient-to-br from-white to-secondary/30"
                         >
                           <div className="flex items-center gap-2 mb-3">
-                            <div className={`w-4 h-4 rounded-full ${conditionColors[condition].replace('hover:bg-[#', 'bg-[#')}`} />
+                            <div className={`w-4 h-4 rounded-full ${conditionColors[condition]}`} />
                             <h3 className="font-bold text-lg">{conditionLabels[condition]}</h3>
                           </div>
                           <div className="text-4xl font-bold mb-2">{count}</div>
