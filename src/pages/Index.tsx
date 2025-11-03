@@ -16,6 +16,7 @@ type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | '1' | '2' | '3' | 'needed' | 'not_ne
 interface MonthlyRecord {
   month: string;
   condition: UniformCondition;
+  issueDate?: string;
 }
 
 interface UniformItem {
@@ -135,7 +136,7 @@ const Index = () => {
     return hasCondition;
   });
 
-  const updateCondition = (empId: number, uniformType: keyof Employee['uniform'], condition: UniformCondition) => {
+  const updateCondition = (empId: number, uniformType: keyof Employee['uniform'], condition: UniformCondition, issueDate?: string) => {
     setEmployees((prev) =>
       prev.map((emp) => {
         if (emp.id === empId) {
@@ -145,9 +146,9 @@ const Index = () => {
           let newRecords;
           if (existingRecordIndex >= 0) {
             newRecords = [...item.monthlyRecords];
-            newRecords[existingRecordIndex] = { month: selectedMonth, condition };
+            newRecords[existingRecordIndex] = { month: selectedMonth, condition, issueDate: issueDate || newRecords[existingRecordIndex].issueDate };
           } else {
-            newRecords = [...item.monthlyRecords, { month: selectedMonth, condition }];
+            newRecords = [...item.monthlyRecords, { month: selectedMonth, condition, issueDate }];
           }
 
           return {
@@ -211,6 +212,19 @@ const Index = () => {
   const exportToExcel = () => {
     const data: any[] = [];
     
+    const sizeLabels: Record<Size, string> = {
+      'XS': 'XS',
+      'S': 'S',
+      'M': 'M',
+      'L': 'L',
+      'XL': 'XL',
+      '1': 'Размер 1',
+      '2': 'Размер 2',
+      '3': 'Размер 3',
+      'needed': 'Нужен',
+      'not_needed': 'Не нужно'
+    };
+    
     employees.forEach((emp) => {
       const record = getConditionForMonth(emp.uniform.tshirt, selectedMonth);
       const row: any = {
@@ -220,9 +234,13 @@ const Index = () => {
 
       (['tshirt', 'pants', 'jacket', 'badge'] as const).forEach((type) => {
         const item = emp.uniform[type];
-        const condition = getConditionForMonth(item, selectedMonth);
+        const record = item.monthlyRecords.find(r => r.month === selectedMonth);
+        const condition = record?.condition;
         row[uniformLabels[type]] = condition ? conditionLabels[condition] : 'Не заполнено';
-        row[`${uniformLabels[type]} - Размер`] = item.size;
+        row[`${uniformLabels[type]} - Размер`] = sizeLabels[item.size] || item.size;
+        if (condition === 'needs_replacement' && record?.issueDate) {
+          row[`${uniformLabels[type]} - Дата выдачи`] = record.issueDate;
+        }
       });
 
       data.push(row);
@@ -285,7 +303,7 @@ const Index = () => {
         </div>
 
         <Tabs defaultValue="inventory" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="inventory" className="flex items-center gap-2">
               <Icon name="ClipboardList" size={18} />
               Учёт формы
@@ -293,6 +311,10 @@ const Index = () => {
             <TabsTrigger value="order" className="flex items-center gap-2">
               <Icon name="ShoppingBag" size={18} />
               Заказать форму
+            </TabsTrigger>
+            <TabsTrigger value="issue" className="flex items-center gap-2">
+              <Icon name="Calendar" size={18} />
+              Выдача формы
             </TabsTrigger>
             <TabsTrigger value="stats" className="flex items-center gap-2">
               <Icon name="BarChart3" size={18} />
@@ -394,7 +416,7 @@ const Index = () => {
                                       )}
                                       {condition === 'needs_replacement' && (
                                         <span className="flex items-center gap-2">
-                                          <Icon name="AlertCircle" size={16} className="text-[#FF8C00]" />
+                                          <Icon name="Package" size={16} className="text-[#FF8C00]" />
                                           Нужно новое
                                         </span>
                                       )}
@@ -415,7 +437,7 @@ const Index = () => {
                                     </SelectItem>
                                     <SelectItem value="needs_replacement">
                                       <span className="flex items-center gap-2">
-                                        <Icon name="AlertCircle" size={16} className="text-[#FF8C00]" />
+                                        <Icon name="Package" size={16} className="text-[#FF8C00]" />
                                         Нужно новое
                                       </span>
                                     </SelectItem>
@@ -561,6 +583,86 @@ const Index = () => {
                     </div>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="issue" className="animate-fade-in">
+            <Card>
+              <CardHeader>
+                <CardTitle>Выдача новой формы</CardTitle>
+                <CardDescription>Укажите дату выдачи новой формы сотруднику</CardDescription>
+                <div className="flex items-center gap-4 mt-4">
+                  <label className="text-sm font-medium">Месяц:</label>
+                  <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MONTHS.map((month) => (
+                        <SelectItem key={month} value={month}>{month}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="font-bold">Имя сотрудника</TableHead>
+                        <TableHead className="font-bold">Футболка</TableHead>
+                        <TableHead className="font-bold">Штаны</TableHead>
+                        <TableHead className="font-bold">Китель</TableHead>
+                        <TableHead className="font-bold">Бейджик</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {employees
+                        .filter((emp) =>
+                          Object.values(emp.uniform).some(
+                            (item) => getConditionForMonth(item, selectedMonth) === 'needs_replacement'
+                          )
+                        )
+                        .map((emp) => (
+                          <TableRow key={emp.id} className="hover:bg-secondary/50 transition-colors">
+                            <TableCell className="font-medium">{emp.name}</TableCell>
+                            {(['tshirt', 'pants', 'jacket', 'badge'] as const).map((type) => {
+                              const condition = getConditionForMonth(emp.uniform[type], selectedMonth);
+                              const record = emp.uniform[type].monthlyRecords.find(r => r.month === selectedMonth);
+                              
+                              if (condition !== 'needs_replacement') {
+                                return <TableCell key={type}>-</TableCell>;
+                              }
+
+                              return (
+                                <TableCell key={type}>
+                                  <Input
+                                    type="date"
+                                    value={record?.issueDate || ''}
+                                    onChange={(e) => {
+                                      updateCondition(emp.id, type, 'needs_replacement', e.target.value);
+                                    }}
+                                    className="w-[150px]"
+                                  />
+                                </TableCell>
+                              );
+                            })}
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                  {employees.filter((emp) =>
+                    Object.values(emp.uniform).some(
+                      (item) => getConditionForMonth(item, selectedMonth) === 'needs_replacement'
+                    )
+                  ).length === 0 && (
+                    <div className="text-center text-muted-foreground py-8">
+                      Нет сотрудников, требующих выдачу новой формы в этом месяце
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
