@@ -88,7 +88,7 @@ const conditionColors = {
 const conditionLabels = {
   good: 'Хорошее',
   bad: 'Плохое',
-  needs_replacement: 'Нужно новое',
+  needs_replacement: 'Требуется',
 };
 
 const uniformLabels = {
@@ -269,83 +269,88 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-[#FEF7E0] to-[#F5F5DC]">
       <div className="container mx-auto py-8 px-4">
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-[#C41E3A] mb-2 flex items-center justify-center gap-3">
-            <Icon name="ShieldCheck" size={40} />
+        <div className="mb-6 md:mb-8 text-center">
+          <h1 className="text-2xl md:text-4xl font-bold text-[#C41E3A] mb-2 flex items-center justify-center gap-2 md:gap-3">
+            <Icon name="ShieldCheck" size={32} className="md:w-10 md:h-10" />
             Учёт формы сотрудников
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
           <Card className="border-2 border-primary/20 hover:shadow-lg transition-all">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Icon name="Users" size={18} className="text-primary" />
+            <CardHeader className="pb-2 md:pb-3 p-4 md:p-6">
+              <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-1.5 md:gap-2">
+                <Icon name="Users" size={16} className="text-primary md:w-[18px] md:h-[18px]" />
                 Всего сотрудников
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-primary">{stats.total}</div>
+            <CardContent className="p-4 md:p-6 pt-0">
+              <div className="text-2xl md:text-3xl font-bold text-primary">{stats.total}</div>
             </CardContent>
           </Card>
 
           <Card className="border-2 border-[#FF8C00]/20 hover:shadow-lg transition-all">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Icon name="AlertCircle" size={18} className="text-[#FF8C00]" />
-                Нужна замена ({selectedMonth})
+            <CardHeader className="pb-2 md:pb-3 p-4 md:p-6">
+              <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-1.5 md:gap-2">
+                <Icon name="AlertCircle" size={16} className="text-[#FF8C00] md:w-[18px] md:h-[18px]" />
+                <span className="truncate">Нужна замена ({selectedMonth})</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-[#FF8C00]">{stats.needsReplacement}</div>
+            <CardContent className="p-4 md:p-6 pt-0">
+              <div className="text-2xl md:text-3xl font-bold text-[#FF8C00]">{stats.needsReplacement}</div>
             </CardContent>
           </Card>
         </div>
 
         <Tabs defaultValue="inventory" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
-            <TabsTrigger value="inventory" className="flex items-center gap-2">
-              <Icon name="ClipboardList" size={18} />
-              Учёт формы
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-4 md:mb-6 h-auto">
+            <TabsTrigger value="inventory" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm py-2 md:py-2.5">
+              <Icon name="ClipboardList" size={16} className="md:w-[18px] md:h-[18px]" />
+              <span className="hidden sm:inline">Учёт формы</span>
+              <span className="sm:hidden">Учёт</span>
             </TabsTrigger>
-            <TabsTrigger value="order" className="flex items-center gap-2">
-              <Icon name="ShoppingBag" size={18} />
-              Заказать форму
+            <TabsTrigger value="order" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm py-2 md:py-2.5">
+              <Icon name="ShoppingBag" size={16} className="md:w-[18px] md:h-[18px]" />
+              <span className="hidden sm:inline">Заказать форму</span>
+              <span className="sm:hidden">Заказ</span>
             </TabsTrigger>
-            <TabsTrigger value="issue" className="flex items-center gap-2">
-              <Icon name="Calendar" size={18} />
-              Выдача формы
+            <TabsTrigger value="issue" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm py-2 md:py-2.5">
+              <Icon name="Calendar" size={16} className="md:w-[18px] md:h-[18px]" />
+              <span className="hidden sm:inline">Выдача формы</span>
+              <span className="sm:hidden">Выдача</span>
             </TabsTrigger>
-            <TabsTrigger value="stats" className="flex items-center gap-2">
-              <Icon name="BarChart3" size={18} />
-              Статистика
+            <TabsTrigger value="stats" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm py-2 md:py-2.5">
+              <Icon name="BarChart3" size={16} className="md:w-[18px] md:h-[18px]" />
+              <span className="hidden sm:inline">Статистика</span>
+              <span className="sm:hidden">Статистика</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="inventory" className="animate-fade-in">
             <Card>
-              <CardHeader>
-                <div className="flex justify-between items-start mb-4">
+              <CardHeader className="p-4 md:p-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0 mb-3 md:mb-4">
                   <div>
-                    <CardTitle>Учёт состояния формы</CardTitle>
-                    <CardDescription>Отслеживайте состояние формы каждого сотрудника</CardDescription>
+                    <CardTitle className="text-base md:text-lg">Учёт состояния формы</CardTitle>
+                    <CardDescription className="text-xs md:text-sm">Отслеживайте состояние формы каждого сотрудника</CardDescription>
                   </div>
-                  <Button onClick={addEmployee} className="flex items-center gap-2">
-                    <Icon name="UserPlus" size={18} />
-                    Добавить сотрудника
+                  <Button onClick={addEmployee} className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm w-full sm:w-auto" size="sm">
+                    <Icon name="UserPlus" size={16} className="md:w-[18px] md:h-[18px]" />
+                    <span className="hidden sm:inline">Добавить сотрудника</span>
+                    <span className="sm:hidden">Добавить</span>
                   </Button>
                 </div>
-                <div className="flex flex-col md:flex-row gap-4 mt-4">
+                <div className="flex flex-col md:flex-row gap-2 md:gap-4 mt-3 md:mt-4">
                   <div className="flex-1">
                     <Input
-                      placeholder="Поиск по имени сотрудника..."
+                      placeholder="Поиск по имени..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full"
+                      className="w-full h-9 md:h-10 text-sm md:text-base"
                     />
                   </div>
                   <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                    <SelectTrigger className="w-full md:w-[200px]">
+                    <SelectTrigger className="w-full md:w-[180px] h-9 md:h-10 text-sm md:text-base">
                       <SelectValue placeholder="Выберите месяц" />
                     </SelectTrigger>
                     <SelectContent>
@@ -355,69 +360,72 @@ const Index = () => {
                     </SelectContent>
                   </Select>
                   <Select value={filterCondition} onValueChange={setFilterCondition}>
-                    <SelectTrigger className="w-full md:w-[200px]">
-                      <SelectValue placeholder="Фильтр по состоянию" />
+                    <SelectTrigger className="w-full md:w-[180px] h-9 md:h-10 text-sm md:text-base">
+                      <SelectValue placeholder="Фильтр" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Все состояния</SelectItem>
                       <SelectItem value="good">Хорошее</SelectItem>
                       <SelectItem value="bad">Плохое</SelectItem>
-                      <SelectItem value="needs_replacement">Нужно новое</SelectItem>
+                      <SelectItem value="needs_replacement">Требуется</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 md:p-6">
                 <div className="rounded-md border overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="font-bold">Имя сотрудника</TableHead>
-                        <TableHead className="font-bold">Футболка</TableHead>
-                        <TableHead className="font-bold">Штаны</TableHead>
-                        <TableHead className="font-bold">Китель</TableHead>
-                        <TableHead className="font-bold">Бейджик</TableHead>
-                        <TableHead className="font-bold w-[100px]">Действия</TableHead>
+                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Имя</TableHead>
+                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Футболка</TableHead>
+                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Штаны</TableHead>
+                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Китель</TableHead>
+                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Бейджик</TableHead>
+                        <TableHead className="font-bold text-xs md:text-sm w-[60px] md:w-[100px]">Действия</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredEmployees.map((emp) => (
                         <TableRow key={emp.id} className="hover:bg-secondary/50 transition-colors">
-                          <TableCell>
+                          <TableCell className="p-2 md:p-4">
                             <Input
                               value={emp.name}
                               onChange={(e) => updateEmployeeName(emp.id, e.target.value)}
-                              className="font-medium border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary"
+                              className="font-medium border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary text-xs md:text-sm h-8 md:h-9"
                             />
                           </TableCell>
                           {(['tshirt', 'pants', 'jacket', 'badge'] as const).map((type) => {
                             const condition = getConditionForMonth(emp.uniform[type], selectedMonth);
                             return (
-                              <TableCell key={type}>
+                              <TableCell key={type} className="p-2 md:p-4">
                                 <Select
                                   value={condition || ''}
                                   onValueChange={(value) =>
                                     updateCondition(emp.id, type, value as UniformCondition)
                                   }
                                 >
-                                  <SelectTrigger className="w-full">
+                                  <SelectTrigger className="w-full h-8 md:h-9 text-xs md:text-sm">
                                     <SelectValue placeholder="Не выбрано">
                                       {condition === 'good' && (
-                                        <span className="flex items-center gap-2">
-                                          <Icon name="Check" size={16} className="text-[#2E8B57]" />
-                                          Хорошее
+                                        <span className="flex items-center gap-1 md:gap-2">
+                                          <Icon name="Check" size={14} className="text-[#2E8B57] md:w-4 md:h-4" />
+                                          <span className="hidden sm:inline">Хорошее</span>
+                                          <span className="sm:hidden">Хор.</span>
                                         </span>
                                       )}
                                       {condition === 'bad' && (
-                                        <span className="flex items-center gap-2">
-                                          <Icon name="X" size={16} className="text-[#DC143C]" />
-                                          Плохое
+                                        <span className="flex items-center gap-1 md:gap-2">
+                                          <Icon name="X" size={14} className="text-[#DC143C] md:w-4 md:h-4" />
+                                          <span className="hidden sm:inline">Плохое</span>
+                                          <span className="sm:hidden">Плох.</span>
                                         </span>
                                       )}
                                       {condition === 'needs_replacement' && (
-                                        <span className="flex items-center gap-2">
-                                          <Icon name="Package" size={16} className="text-[#FF8C00]" />
-                                          Нужно новое
+                                        <span className="flex items-center gap-1 md:gap-2">
+                                          <Icon name="Package" size={14} className="text-[#FF8C00] md:w-4 md:h-4" />
+                                          <span className="hidden sm:inline">Требуется</span>
+                                          <span className="sm:hidden">Треб.</span>
                                         </span>
                                       )}
                                     </SelectValue>
@@ -438,7 +446,7 @@ const Index = () => {
                                     <SelectItem value="needs_replacement">
                                       <span className="flex items-center gap-2">
                                         <Icon name="Package" size={16} className="text-[#FF8C00]" />
-                                        Нужно новое
+                                        Требуется
                                       </span>
                                     </SelectItem>
                                   </SelectContent>
@@ -446,14 +454,14 @@ const Index = () => {
                               </TableCell>
                             );
                           })}
-                          <TableCell>
+                          <TableCell className="p-2 md:p-4">
                             <Button
                               size="sm"
                               variant="ghost"
                               onClick={() => deleteEmployee(emp.id)}
-                              className="text-destructive hover:text-destructive"
+                              className="text-destructive hover:text-destructive h-8 w-8 p-0"
                             >
-                              <Icon name="Trash2" size={16} />
+                              <Icon name="Trash2" size={14} className="md:w-4 md:h-4" />
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -467,15 +475,15 @@ const Index = () => {
 
           <TabsContent value="order" className="animate-fade-in">
             <Card>
-              <CardHeader>
-                <CardTitle>Заказать форму</CardTitle>
-                <CardDescription>Выберите сотрудника и укажите необходимые размеры</CardDescription>
+              <CardHeader className="p-4 md:p-6">
+                <CardTitle className="text-base md:text-lg">Заказать форму</CardTitle>
+                <CardDescription className="text-xs md:text-sm">Выберите сотрудника и укажите необходимые размеры</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Сотрудник</label>
+                  <label className="text-xs md:text-sm font-medium mb-2 block">Сотрудник</label>
                   <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 md:h-10 text-sm md:text-base">
                       <SelectValue placeholder="Выберите сотрудника" />
                     </SelectTrigger>
                     <SelectContent>
@@ -489,10 +497,10 @@ const Index = () => {
                 </div>
 
                 {selectedEmployee && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <div>
-                      <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                        <Icon name="Shirt" size={16} className="text-primary" />
+                      <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
+                        <Icon name="Shirt" size={14} className="text-primary md:w-4 md:h-4" />
                         Футболка
                       </label>
                       <Select
@@ -501,7 +509,7 @@ const Index = () => {
                           updateSize(parseInt(selectedEmployee), 'tshirt', value as Size)
                         }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-9 md:h-10 text-sm md:text-base">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -516,8 +524,8 @@ const Index = () => {
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                        <Icon name="User" size={16} className="text-primary" />
+                      <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
+                        <Icon name="User" size={14} className="text-primary md:w-4 md:h-4" />
                         Штаны
                       </label>
                       <Select
@@ -526,7 +534,7 @@ const Index = () => {
                           updateSize(parseInt(selectedEmployee), 'pants', value as Size)
                         }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-9 md:h-10 text-sm md:text-base">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -539,8 +547,8 @@ const Index = () => {
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                        <Icon name="Component" size={16} className="text-primary" />
+                      <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
+                        <Icon name="Component" size={14} className="text-primary md:w-4 md:h-4" />
                         Китель
                       </label>
                       <Select
@@ -549,7 +557,7 @@ const Index = () => {
                           updateSize(parseInt(selectedEmployee), 'jacket', value as Size)
                         }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-9 md:h-10 text-sm md:text-base">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -562,8 +570,8 @@ const Index = () => {
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                        <Icon name="BadgeCheck" size={16} className="text-primary" />
+                      <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
+                        <Icon name="BadgeCheck" size={14} className="text-primary md:w-4 md:h-4" />
                         Бейджик
                       </label>
                       <Select
@@ -572,7 +580,7 @@ const Index = () => {
                           updateSize(parseInt(selectedEmployee), 'badge', value as Size)
                         }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-9 md:h-10 text-sm md:text-base">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -589,13 +597,13 @@ const Index = () => {
 
           <TabsContent value="issue" className="animate-fade-in">
             <Card>
-              <CardHeader>
-                <CardTitle>Выдача новой формы</CardTitle>
-                <CardDescription>Укажите дату выдачи новой формы сотруднику</CardDescription>
-                <div className="flex items-center gap-4 mt-4">
-                  <label className="text-sm font-medium">Месяц:</label>
+              <CardHeader className="p-4 md:p-6">
+                <CardTitle className="text-base md:text-lg">Выдача новой формы</CardTitle>
+                <CardDescription className="text-xs md:text-sm">Укажите дату выдачи новой формы сотруднику</CardDescription>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 mt-3 md:mt-4">
+                  <label className="text-xs md:text-sm font-medium">Месяц:</label>
                   <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                    <SelectTrigger className="w-[200px]">
+                    <SelectTrigger className="w-full sm:w-[180px] md:w-[200px] h-9 md:h-10 text-sm md:text-base">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -606,16 +614,16 @@ const Index = () => {
                   </Select>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 md:p-6">
                 <div className="rounded-md border overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="font-bold">Имя сотрудника</TableHead>
-                        <TableHead className="font-bold">Футболка</TableHead>
-                        <TableHead className="font-bold">Штаны</TableHead>
-                        <TableHead className="font-bold">Китель</TableHead>
-                        <TableHead className="font-bold">Бейджик</TableHead>
+                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Имя</TableHead>
+                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Футболка</TableHead>
+                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Штаны</TableHead>
+                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Китель</TableHead>
+                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Бейджик</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -627,24 +635,24 @@ const Index = () => {
                         )
                         .map((emp) => (
                           <TableRow key={emp.id} className="hover:bg-secondary/50 transition-colors">
-                            <TableCell className="font-medium">{emp.name}</TableCell>
+                            <TableCell className="font-medium text-xs md:text-sm p-2 md:p-4">{emp.name}</TableCell>
                             {(['tshirt', 'pants', 'jacket', 'badge'] as const).map((type) => {
                               const condition = getConditionForMonth(emp.uniform[type], selectedMonth);
                               const record = emp.uniform[type].monthlyRecords.find(r => r.month === selectedMonth);
                               
                               if (condition !== 'needs_replacement') {
-                                return <TableCell key={type}>-</TableCell>;
+                                return <TableCell key={type} className="text-xs md:text-sm p-2 md:p-4">-</TableCell>;
                               }
 
                               return (
-                                <TableCell key={type}>
+                                <TableCell key={type} className="p-2 md:p-4">
                                   <Input
                                     type="date"
                                     value={record?.issueDate || ''}
                                     onChange={(e) => {
                                       updateCondition(emp.id, type, 'needs_replacement', e.target.value);
                                     }}
-                                    className="w-[150px]"
+                                    className="w-full max-w-[130px] md:max-w-[150px] h-8 md:h-9 text-xs md:text-sm"
                                   />
                                 </TableCell>
                               );
@@ -658,7 +666,7 @@ const Index = () => {
                       (item) => getConditionForMonth(item, selectedMonth) === 'needs_replacement'
                     )
                   ).length === 0 && (
-                    <div className="text-center text-muted-foreground py-8">
+                    <div className="text-center text-muted-foreground py-6 md:py-8 text-xs md:text-sm px-4">
                       Нет сотрудников, требующих выдачу новой формы в этом месяце
                     </div>
                   )}
