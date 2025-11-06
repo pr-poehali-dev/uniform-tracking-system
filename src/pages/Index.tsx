@@ -99,10 +99,19 @@ const uniformLabels = {
 };
 
 const Index = () => {
-  const [employees, setEmployees] = useState<Employee[]>(() => {
-    const saved = localStorage.getItem('employees');
+  const [restaurant, setRestaurant] = useState<'port' | 'dickens'>('port');
+  const [portEmployees, setPortEmployees] = useState<Employee[]>(() => {
+    const saved = localStorage.getItem('portEmployees');
     return saved ? JSON.parse(saved) : initialEmployees;
   });
+  const [dickensEmployees, setDickensEmployees] = useState<Employee[]>(() => {
+    const saved = localStorage.getItem('dickensEmployees');
+    return saved ? JSON.parse(saved) : initialEmployees;
+  });
+  
+  const employees = restaurant === 'port' ? portEmployees : dickensEmployees;
+  const setEmployees = restaurant === 'port' ? setPortEmployees : setDickensEmployees;
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCondition, setFilterCondition] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonth());
@@ -115,8 +124,12 @@ const Index = () => {
   });
 
   useEffect(() => {
-    localStorage.setItem('employees', JSON.stringify(employees));
-  }, [employees]);
+    localStorage.setItem('portEmployees', JSON.stringify(portEmployees));
+  }, [portEmployees]);
+  
+  useEffect(() => {
+    localStorage.setItem('dickensEmployees', JSON.stringify(dickensEmployees));
+  }, [dickensEmployees]);
 
   const getConditionForMonth = (item: UniformItem, month: string): UniformCondition | null => {
     const record = item.monthlyRecords.find(r => r.month === month);
@@ -274,6 +287,24 @@ const Index = () => {
             <Icon name="ShieldCheck" size={32} className="md:w-10 md:h-10" />
             Учёт формы сотрудников
           </h1>
+          <div className="flex items-center justify-center gap-3 mt-4">
+            <Button
+              variant={restaurant === 'port' ? 'default' : 'outline'}
+              onClick={() => setRestaurant('port')}
+              className="flex items-center gap-2 text-sm md:text-base"
+            >
+              <Icon name="Store" size={18} />
+              Port
+            </Button>
+            <Button
+              variant={restaurant === 'dickens' ? 'default' : 'outline'}
+              onClick={() => setRestaurant('dickens')}
+              className="flex items-center gap-2 text-sm md:text-base"
+            >
+              <Icon name="Utensils" size={18} />
+              Диккенс
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
