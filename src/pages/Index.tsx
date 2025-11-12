@@ -100,6 +100,7 @@ const uniformLabels = {
 
 const Index = () => {
   const [restaurant, setRestaurant] = useState<'port' | 'dickens' | 'bar'>('port');
+  const [showPortMenu, setShowPortMenu] = useState(false);
   const [portEmployees, setPortEmployees] = useState<Employee[]>(() => {
     const saved = localStorage.getItem('portEmployees');
     return saved ? JSON.parse(saved) : initialEmployees;
@@ -289,24 +290,52 @@ const Index = () => {
 
   const isDickens = restaurant === 'dickens';
   const isBar = restaurant === 'bar';
+  const isPort = restaurant === 'port';
   
   return (
     <div className={`min-h-screen ${isDickens ? 'bg-gradient-to-br from-[#1e3a5f] via-[#2c5282] to-[#1a365d]' : isBar ? 'bg-gradient-to-br from-[#f5f5f5] via-[#e8e8e8] to-[#d4d4d4]' : 'bg-gradient-to-br from-white via-[#FEF7E0] to-[#F5F5DC]'}`}>
       <div className="container mx-auto py-8 px-4">
         <div className="mb-6 md:mb-8 text-center">
-          <h1 className={`text-2xl md:text-4xl font-bold mb-2 flex items-center justify-center gap-2 md:gap-3 ${isDickens ? 'text-white' : isBar ? 'text-[#1cac78]' : 'text-[#C41E3A]'}`}>
+          <h1 className={`text-2xl md:text-4xl font-bold mb-2 flex items-center justify-center gap-2 md:gap-3 ${isDickens ? 'text-white' : isBar ? 'text-[#0d5c3a]' : 'text-[#C41E3A]'}`}>
             <Icon name="ShieldCheck" size={32} className="md:w-10 md:h-10" />
             Учёт формы сотрудников
           </h1>
           <div className="flex items-center justify-center gap-3 mt-4">
-            <Button
-              variant={restaurant === 'port' ? 'default' : 'outline'}
-              onClick={() => setRestaurant('port')}
-              className="flex items-center gap-2 text-sm md:text-base"
-            >
-              <Icon name="Store" size={18} />
-              Port
-            </Button>
+            <div className="relative">
+              <Button
+                variant={(restaurant === 'port' || restaurant === 'bar') ? 'default' : 'outline'}
+                onClick={() => setShowPortMenu(!showPortMenu)}
+                className="flex items-center gap-2 text-sm md:text-base"
+              >
+                <Icon name="Store" size={18} />
+                {restaurant === 'bar' ? 'Бар' : 'Port'}
+                <Icon name={showPortMenu ? "ChevronUp" : "ChevronDown"} size={16} />
+              </Button>
+              {showPortMenu && (
+                <div className="absolute top-full left-0 mt-2 bg-white border rounded-md shadow-lg z-50 min-w-[120px]">
+                  <button
+                    onClick={() => {
+                      setRestaurant('port');
+                      setShowPortMenu(false);
+                    }}
+                    className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
+                  >
+                    <Icon name="Store" size={16} />
+                    Port
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRestaurant('bar');
+                      setShowPortMenu(false);
+                    }}
+                    className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
+                  >
+                    <Icon name="Wine" size={16} />
+                    Бар
+                  </button>
+                </div>
+              )}
+            </div>
             <Button
               variant={restaurant === 'dickens' ? 'default' : 'outline'}
               onClick={() => setRestaurant('dickens')}
@@ -315,39 +344,31 @@ const Index = () => {
               <Icon name="Utensils" size={18} />
               Диккенс
             </Button>
-            <Button
-              variant={restaurant === 'bar' ? 'default' : 'outline'}
-              onClick={() => setRestaurant('bar')}
-              className="flex items-center gap-2 text-sm md:text-base"
-            >
-              <Icon name="Wine" size={18} />
-              Бар
-            </Button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
-          <Card className={`border-2 hover:shadow-lg transition-all ${isDickens ? 'bg-white border-[#1e3a5f]/30' : isBar ? 'bg-white border-[#1cac78]/30' : 'border-primary/20'}`}>
+          <Card className={`border-2 hover:shadow-lg transition-all ${isDickens ? 'bg-white border-[#1e3a5f]/30' : isBar ? 'bg-white border-[#0d5c3a]/30' : 'border-primary/20'}`}>
             <CardHeader className="pb-2 md:pb-3 p-4 md:p-6">
               <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-1.5 md:gap-2">
-                <Icon name="Users" size={16} className={`md:w-[18px] md:h-[18px] ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#1cac78]' : 'text-primary'}`} />
+                <Icon name="Users" size={16} className={`md:w-[18px] md:h-[18px] ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
                 Всего сотрудников
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 md:p-6 pt-0">
-              <div className={`text-2xl md:text-3xl font-bold ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#1cac78]' : 'text-primary'}`}>{stats.total}</div>
+              <div className={`text-2xl md:text-3xl font-bold ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`}>{stats.total}</div>
             </CardContent>
           </Card>
 
-          <Card className={`border-2 hover:shadow-lg transition-all ${isDickens ? 'bg-white border-[#1e3a5f]/30' : isBar ? 'bg-white border-[#1cac78]/30' : 'border-[#FF8C00]/20'}`}>
+          <Card className={`border-2 hover:shadow-lg transition-all ${isDickens ? 'bg-white border-[#1e3a5f]/30' : isBar ? 'bg-white border-[#0d5c3a]/30' : 'border-[#FF8C00]/20'}`}>
             <CardHeader className="pb-2 md:pb-3 p-4 md:p-6">
               <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-1.5 md:gap-2">
-                <Icon name="AlertCircle" size={16} className={`md:w-[18px] md:h-[18px] ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#1cac78]' : 'text-[#FF8C00]'}`} />
+                <Icon name="AlertCircle" size={16} className={`md:w-[18px] md:h-[18px] ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`} />
                 <span className="truncate">Нужна замена ({selectedMonth})</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 md:p-6 pt-0">
-              <div className={`text-2xl md:text-3xl font-bold ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#1cac78]' : 'text-[#FF8C00]'}`}>{stats.needsReplacement}</div>
+              <div className={`text-2xl md:text-3xl font-bold ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`}>{stats.needsReplacement}</div>
             </CardContent>
           </Card>
         </div>
@@ -384,7 +405,7 @@ const Index = () => {
                     <CardTitle className="text-base md:text-lg">Учёт состояния формы</CardTitle>
                     <CardDescription className="text-xs md:text-sm">Отслеживайте состояние формы каждого сотрудника</CardDescription>
                   </div>
-                  <Button onClick={addEmployee} className={`flex items-center gap-1.5 md:gap-2 text-xs md:text-sm w-full sm:w-auto ${isDickens ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : isBar ? 'bg-[#1cac78] hover:bg-[#17936a]' : ''}`} size="sm">
+                  <Button onClick={addEmployee} className={`flex items-center gap-1.5 md:gap-2 text-xs md:text-sm w-full sm:w-auto ${isDickens ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : isBar ? 'bg-[#0d5c3a] hover:bg-[#094d2e]' : ''}`} size="sm">
                     <Icon name="UserPlus" size={16} className="md:w-[18px] md:h-[18px]" />
                     <span className="hidden sm:inline">Добавить сотрудника</span>
                     <span className="sm:hidden">Добавить</span>
@@ -550,7 +571,7 @@ const Index = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <div>
                       <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
-                        <Icon name="Shirt" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#1cac78]' : 'text-primary'}`} />
+                        <Icon name="Shirt" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
                         Футболка
                       </label>
                       <Select
@@ -575,7 +596,7 @@ const Index = () => {
 
                     <div>
                       <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
-                        <Icon name="User" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#1cac78]' : 'text-primary'}`} />
+                        <Icon name="User" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
                         Штаны
                       </label>
                       <Select
@@ -598,7 +619,7 @@ const Index = () => {
 
                     <div>
                       <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
-                        <Icon name="Component" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#1cac78]' : 'text-primary'}`} />
+                        <Icon name="Component" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
                         Китель
                       </label>
                       <Select
@@ -621,7 +642,7 @@ const Index = () => {
 
                     <div>
                       <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
-                        <Icon name="BadgeCheck" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#1cac78]' : 'text-primary'}`} />
+                        <Icon name="BadgeCheck" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
                         Бейджик
                       </label>
                       <Select
@@ -728,7 +749,7 @@ const Index = () => {
           <TabsContent value="stats" className="animate-fade-in">
             <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-4">
-                <label className={`text-sm font-medium ${isDickens ? 'text-white' : isBar ? 'text-[#1cac78]' : ''}`}>Месяц отчета:</label>
+                <label className={`text-sm font-medium ${isDickens ? 'text-white' : isBar ? 'text-[#0d5c3a]' : ''}`}>Месяц отчета:</label>
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
                   <SelectTrigger className="w-[200px]">
                     <SelectValue />
@@ -740,7 +761,7 @@ const Index = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={exportToExcel} className={`flex items-center gap-2 ${isDickens ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : isBar ? 'bg-[#1cac78] hover:bg-[#17936a]' : ''}`}>
+              <Button onClick={exportToExcel} className={`flex items-center gap-2 ${isDickens ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : isBar ? 'bg-[#0d5c3a] hover:bg-[#094d2e]' : ''}`}>
                 <Icon name="FileDown" size={18} />
                 Экспорт в Excel
               </Button>
@@ -757,17 +778,17 @@ const Index = () => {
                     {Object.entries(stats.byType).map(([type, count]) => (
                       <div key={type} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${isDickens ? 'bg-[#1e3a5f]' : isBar ? 'bg-[#1cac78]' : 'bg-[#FF8C00]'}`} />
+                          <div className={`w-3 h-3 rounded-full ${isDickens ? 'bg-[#1e3a5f]' : isBar ? 'bg-[#0d5c3a]' : 'bg-[#FF8C00]'}`} />
                           <span className="font-medium">{uniformLabels[type as keyof typeof uniformLabels]}</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="h-2 bg-secondary rounded-full w-32 overflow-hidden">
                             <div
-                              className={`h-full transition-all ${isDickens ? 'bg-[#1e3a5f]' : isBar ? 'bg-[#1cac78]' : 'bg-[#FF8C00]'}`}
+                              className={`h-full transition-all ${isDickens ? 'bg-[#1e3a5f]' : isBar ? 'bg-[#0d5c3a]' : 'bg-[#FF8C00]'}`}
                               style={{ width: `${stats.total > 0 ? (count / stats.total) * 100 : 0}%` }}
                             />
                           </div>
-                          <span className={`text-2xl font-bold w-8 text-right ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#1cac78]' : 'text-[#FF8C00]'}`}>{count}</span>
+                          <span className={`text-2xl font-bold w-8 text-right ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`}>{count}</span>
                         </div>
                       </div>
                     ))}
@@ -789,7 +810,7 @@ const Index = () => {
                       .map((emp) => (
                         <div
                           key={emp.id}
-                          className={`p-3 rounded-lg border-2 transition-colors ${isDickens ? 'border-[#1e3a5f]/20 bg-[#1e3a5f]/5 hover:bg-[#1e3a5f]/10' : isBar ? 'border-[#1cac78]/20 bg-[#1cac78]/5 hover:bg-[#1cac78]/10' : 'border-[#FF8C00]/20 bg-[#FF8C00]/5 hover:bg-[#FF8C00]/10'}`}
+                          className={`p-3 rounded-lg border-2 transition-colors ${isDickens ? 'border-[#1e3a5f]/20 bg-[#1e3a5f]/5 hover:bg-[#1e3a5f]/10' : isBar ? 'border-[#0d5c3a]/20 bg-[#0d5c3a]/5 hover:bg-[#0d5c3a]/10' : 'border-[#FF8C00]/20 bg-[#FF8C00]/5 hover:bg-[#FF8C00]/10'}`}
                         >
                           <div className="font-medium mb-2">{emp.name}</div>
                           <div className="flex flex-wrap gap-2">
