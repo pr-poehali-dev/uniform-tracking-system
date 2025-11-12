@@ -986,85 +986,89 @@ const Index = () => {
                       </div>
                     </div>
 
-                    <div>
-                      <h4 className="font-semibold mb-4 flex items-center gap-2">
-                        <Icon name="User" size={18} className={isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'} />
-                        Штаны
-                      </h4>
-                      <div className="space-y-2">
-                        {(() => {
-                          const sizeCounts: Record<string, number> = {};
-                          employees.forEach(emp => {
-                            if (getConditionForMonth(emp.uniform.pants, selectedMonth) === 'needs_replacement') {
-                              const size = emp.uniform.pants.size;
-                              if (size !== 'not_needed') {
+                    {!isRunners && (
+                      <div>
+                        <h4 className="font-semibold mb-4 flex items-center gap-2">
+                          <Icon name="User" size={18} className={isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'} />
+                          Штаны
+                        </h4>
+                        <div className="space-y-2">
+                          {(() => {
+                            const sizeCounts: Record<string, number> = {};
+                            employees.forEach(emp => {
+                              if (getConditionForMonth(emp.uniform.pants, selectedMonth) === 'needs_replacement') {
+                                const size = emp.uniform.pants.size;
+                                if (size !== 'not_needed') {
+                                  sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                                }
+                              }
+                            });
+                            return Object.entries(sizeCounts).map(([size, count]) => (
+                              <div key={size} className="flex justify-between items-center p-3 rounded-lg bg-secondary/30">
+                                <span className="font-medium">Размер {size}</span>
+                                <Badge variant="secondary" className="bg-primary text-white">
+                                  {count} шт
+                                </Badge>
+                              </div>
+                            ));
+                          })()}
+                          {(() => {
+                            const sizeCounts: Record<string, number> = {};
+                            employees.forEach(emp => {
+                              if (getConditionForMonth(emp.uniform.pants, selectedMonth) === 'needs_replacement') {
+                                const size = emp.uniform.pants.size;
                                 sizeCounts[size] = (sizeCounts[size] || 0) + 1;
                               }
-                            }
-                          });
-                          return Object.entries(sizeCounts).map(([size, count]) => (
-                            <div key={size} className="flex justify-between items-center p-3 rounded-lg bg-secondary/30">
-                              <span className="font-medium">Размер {size}</span>
-                              <Badge variant="secondary" className="bg-primary text-white">
-                                {count} шт
-                              </Badge>
-                            </div>
-                          ));
-                        })()}
-                        {(() => {
-                          const sizeCounts: Record<string, number> = {};
-                          employees.forEach(emp => {
-                            if (getConditionForMonth(emp.uniform.pants, selectedMonth) === 'needs_replacement') {
-                              const size = emp.uniform.pants.size;
-                              sizeCounts[size] = (sizeCounts[size] || 0) + 1;
-                            }
-                          });
-                          return Object.keys(sizeCounts).length === 0 ? (
-                            <div className="text-muted-foreground text-sm">Нет штанов для заказа</div>
-                          ) : null;
-                        })()}
+                            });
+                            return Object.keys(sizeCounts).length === 0 ? (
+                              <div className="text-muted-foreground text-sm">Нет штанов для заказа</div>
+                            ) : null;
+                          })()}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    <div>
-                      <h4 className="font-semibold mb-4 flex items-center gap-2">
-                        <Icon name="Component" size={18} className={isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'} />
-                        Кителя
-                      </h4>
-                      <div className="space-y-2">
-                        {(() => {
-                          const sizeCounts: Record<string, number> = {};
-                          employees.forEach(emp => {
-                            if (getConditionForMonth(emp.uniform.jacket, selectedMonth) === 'needs_replacement') {
-                              const size = emp.uniform.jacket.size;
-                              if (size !== 'not_needed') {
+                    {!isRunners && (
+                      <div>
+                        <h4 className="font-semibold mb-4 flex items-center gap-2">
+                          <Icon name="Component" size={18} className={isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'} />
+                          Кителя
+                        </h4>
+                        <div className="space-y-2">
+                          {(() => {
+                            const sizeCounts: Record<string, number> = {};
+                            employees.forEach(emp => {
+                              if (getConditionForMonth(emp.uniform.jacket, selectedMonth) === 'needs_replacement') {
+                                const size = emp.uniform.jacket.size;
+                                if (size !== 'not_needed') {
+                                  sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                                }
+                              }
+                            });
+                            return Object.entries(sizeCounts).map(([size, count]) => (
+                              <div key={size} className="flex justify-between items-center p-3 rounded-lg bg-secondary/30">
+                                <span className="font-medium">Размер {size}</span>
+                                <Badge variant="secondary" className="bg-primary text-white">
+                                  {count} шт
+                                </Badge>
+                              </div>
+                            ));
+                          })()}
+                          {(() => {
+                            const sizeCounts: Record<string, number> = {};
+                            employees.forEach(emp => {
+                              if (getConditionForMonth(emp.uniform.jacket, selectedMonth) === 'needs_replacement') {
+                                const size = emp.uniform.jacket.size;
                                 sizeCounts[size] = (sizeCounts[size] || 0) + 1;
                               }
-                            }
-                          });
-                          return Object.entries(sizeCounts).map(([size, count]) => (
-                            <div key={size} className="flex justify-between items-center p-3 rounded-lg bg-secondary/30">
-                              <span className="font-medium">Размер {size}</span>
-                              <Badge variant="secondary" className="bg-primary text-white">
-                                {count} шт
-                              </Badge>
-                            </div>
-                          ));
-                        })()}
-                        {(() => {
-                          const sizeCounts: Record<string, number> = {};
-                          employees.forEach(emp => {
-                            if (getConditionForMonth(emp.uniform.jacket, selectedMonth) === 'needs_replacement') {
-                              const size = emp.uniform.jacket.size;
-                              sizeCounts[size] = (sizeCounts[size] || 0) + 1;
-                            }
-                          });
-                          return Object.keys(sizeCounts).length === 0 ? (
-                            <div className="text-muted-foreground text-sm">Нет кителей для заказа</div>
-                          ) : null;
-                        })()}
+                            });
+                            return Object.keys(sizeCounts).length === 0 ? (
+                              <div className="text-muted-foreground text-sm">Нет кителей для заказа</div>
+                            ) : null;
+                          })()}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     <div>
                       <h4 className="font-semibold mb-4 flex items-center gap-2">
