@@ -312,10 +312,10 @@ const Index = () => {
   const isRunners = restaurant === 'runners';
   
   return (
-    <div className={`min-h-screen ${isDickens || isHookah || isRunners ? 'bg-gradient-to-br from-[#1e3a5f] via-[#2c5282] to-[#1a365d]' : isBar ? 'bg-gradient-to-br from-[#f5f5f5] via-[#e8e8e8] to-[#d4d4d4]' : 'bg-gradient-to-br from-white via-[#FEF7E0] to-[#F5F5DC]'}`}>
+    <div className={`min-h-screen ${isDickens ? 'bg-gradient-to-br from-[#1e3a5f] via-[#2c5282] to-[#1a365d]' : isHookah ? 'bg-gradient-to-br from-[#1a237e] via-[#283593] to-[#1a237e]' : isRunners ? 'bg-gradient-to-br from-[#4a3520] via-[#5d442f] to-[#4a3520]' : isBar ? 'bg-gradient-to-br from-[#f5f5f5] via-[#e8e8e8] to-[#d4d4d4]' : 'bg-gradient-to-br from-white via-[#FEF7E0] to-[#F5F5DC]'}`}>
       <div className="container mx-auto py-8 px-4">
         <div className="mb-6 md:mb-8 text-center">
-          <h1 className={`text-2xl md:text-4xl font-bold mb-2 flex items-center justify-center gap-2 md:gap-3 ${isDickens || isHookah || isRunners ? 'text-white' : isBar ? 'text-[#0d5c3a]' : 'text-[#C41E3A]'}`}>
+          <h1 className={`text-2xl md:text-4xl font-bold mb-2 flex items-center justify-center gap-2 md:gap-3 ${isDickens || isHookah ? 'text-white' : isRunners ? 'text-[#F5F5DC]' : isBar ? 'text-[#0d5c3a]' : 'text-[#C41E3A]'}`}>
             <Icon name="ShieldCheck" size={32} className="md:w-10 md:h-10" />
             Учёт формы сотрудников
           </h1>
@@ -404,27 +404,27 @@ const Index = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
-          <Card className={`border-2 hover:shadow-lg transition-all ${isDickens || isHookah || isRunners ? 'bg-white border-[#1e3a5f]/30' : isBar ? 'bg-white border-[#0d5c3a]/30' : 'border-primary/20'}`}>
+          <Card className={`border-2 hover:shadow-lg transition-all ${isDickens ? 'bg-white border-[#1e3a5f]/30' : isHookah ? 'bg-white border-[#1a237e]/30' : isRunners ? 'bg-white border-[#4a3520]/30' : isBar ? 'bg-white border-[#0d5c3a]/30' : 'border-primary/20'}`}>
             <CardHeader className="pb-2 md:pb-3 p-4 md:p-6">
               <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-1.5 md:gap-2">
-                <Icon name="Users" size={16} className={`md:w-[18px] md:h-[18px] ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
+                <Icon name="Users" size={16} className={`md:w-[18px] md:h-[18px] ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
                 Всего сотрудников
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 md:p-6 pt-0">
-              <div className={`text-2xl md:text-3xl font-bold ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`}>{stats.total}</div>
+              <div className={`text-2xl md:text-3xl font-bold ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`}>{stats.total}</div>
             </CardContent>
           </Card>
 
-          <Card className={`border-2 hover:shadow-lg transition-all ${isDickens || isHookah || isRunners ? 'bg-white border-[#1e3a5f]/30' : isBar ? 'bg-white border-[#0d5c3a]/30' : 'border-[#FF8C00]/20'}`}>
+          <Card className={`border-2 hover:shadow-lg transition-all ${isDickens ? 'bg-white border-[#1e3a5f]/30' : isHookah ? 'bg-white border-[#1a237e]/30' : isRunners ? 'bg-white border-[#4a3520]/30' : isBar ? 'bg-white border-[#0d5c3a]/30' : 'border-[#FF8C00]/20'}`}>
             <CardHeader className="pb-2 md:pb-3 p-4 md:p-6">
               <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-1.5 md:gap-2">
-                <Icon name="AlertCircle" size={16} className={`md:w-[18px] md:h-[18px] ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`} />
+                <Icon name="AlertCircle" size={16} className={`md:w-[18px] md:h-[18px] ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`} />
                 <span className="truncate">Нужна замена ({selectedMonth})</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 md:p-6 pt-0">
-              <div className={`text-2xl md:text-3xl font-bold ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`}>{stats.needsReplacement}</div>
+              <div className={`text-2xl md:text-3xl font-bold ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`}>{stats.needsReplacement}</div>
             </CardContent>
           </Card>
         </div>
@@ -461,7 +461,7 @@ const Index = () => {
                     <CardTitle className="text-base md:text-lg">Учёт состояния формы</CardTitle>
                     <CardDescription className="text-xs md:text-sm">Отслеживайте состояние формы каждого сотрудника</CardDescription>
                   </div>
-                  <Button onClick={addEmployee} className={`flex items-center gap-1.5 md:gap-2 text-xs md:text-sm w-full sm:w-auto ${isDickens || isHookah || isRunners ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : isBar ? 'bg-[#0d5c3a] hover:bg-[#094d2e]' : ''}`} size="sm">
+                  <Button onClick={addEmployee} className={`flex items-center gap-1.5 md:gap-2 text-xs md:text-sm w-full sm:w-auto ${isDickens ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : isHookah ? 'bg-[#1a237e] hover:bg-[#0d1642]' : isRunners ? 'bg-[#4a3520] hover:bg-[#2d1f12]' : isBar ? 'bg-[#0d5c3a] hover:bg-[#094d2e]' : ''}`} size="sm">
                     <Icon name="UserPlus" size={16} className="md:w-[18px] md:h-[18px]" />
                     <span className="hidden sm:inline">Добавить сотрудника</span>
                     <span className="sm:hidden">Добавить</span>
@@ -627,7 +627,7 @@ const Index = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <div>
                       <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
-                        <Icon name="Shirt" size={14} className={`md:w-4 md:h-4 ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
+                        <Icon name="Shirt" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
                         Футболка
                       </label>
                       <Select
@@ -652,7 +652,7 @@ const Index = () => {
 
                     <div>
                       <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
-                        <Icon name="User" size={14} className={`md:w-4 md:h-4 ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
+                        <Icon name="User" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
                         Штаны
                       </label>
                       <Select
@@ -675,7 +675,7 @@ const Index = () => {
 
                     <div>
                       <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
-                        <Icon name="Component" size={14} className={`md:w-4 md:h-4 ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
+                        <Icon name="Component" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
                         Китель
                       </label>
                       <Select
@@ -698,7 +698,7 @@ const Index = () => {
 
                     <div>
                       <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
-                        <Icon name="BadgeCheck" size={14} className={`md:w-4 md:h-4 ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
+                        <Icon name="BadgeCheck" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
                         Бейджик
                       </label>
                       <Select
@@ -805,7 +805,7 @@ const Index = () => {
           <TabsContent value="stats" className="animate-fade-in">
             <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-4">
-                <label className={`text-sm font-medium ${isDickens ? 'text-white' : isBar ? 'text-[#0d5c3a]' : ''}`}>Месяц отчета:</label>
+                <label className={`text-sm font-medium ${isDickens || isHookah ? 'text-white' : isRunners ? 'text-[#F5F5DC]' : isBar ? 'text-[#0d5c3a]' : ''}`}>Месяц отчета:</label>
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
                   <SelectTrigger className="w-[200px]">
                     <SelectValue />
@@ -817,14 +817,14 @@ const Index = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={exportToExcel} className={`flex items-center gap-2 ${isDickens ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : isBar ? 'bg-[#0d5c3a] hover:bg-[#094d2e]' : ''}`}>
+              <Button onClick={exportToExcel} className={`flex items-center gap-2 ${isDickens ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : isHookah ? 'bg-[#1a237e] hover:bg-[#0d1642]' : isRunners ? 'bg-[#4a3520] hover:bg-[#2d1f12]' : isBar ? 'bg-[#0d5c3a] hover:bg-[#094d2e]' : ''}`}>
                 <Icon name="FileDown" size={18} />
                 Экспорт в Excel
               </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className={isDickens ? 'bg-white' : isBar ? 'bg-white' : ''}>
+              <Card className={isDickens || isHookah || isRunners ? 'bg-white' : isBar ? 'bg-white' : ''}>
                 <CardHeader>
                   <CardTitle>Нужна замена по типам</CardTitle>
                   <CardDescription>Количество предметов формы требующих замены в {selectedMonth}</CardDescription>
@@ -834,17 +834,17 @@ const Index = () => {
                     {Object.entries(stats.byType).map(([type, count]) => (
                       <div key={type} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${isDickens ? 'bg-[#1e3a5f]' : isBar ? 'bg-[#0d5c3a]' : 'bg-[#FF8C00]'}`} />
+                          <div className={`w-3 h-3 rounded-full ${isDickens ? 'bg-[#1e3a5f]' : isHookah ? 'bg-[#1a237e]' : isRunners ? 'bg-[#4a3520]' : isBar ? 'bg-[#0d5c3a]' : 'bg-[#FF8C00]'}`} />
                           <span className="font-medium">{uniformLabels[type as keyof typeof uniformLabels]}</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="h-2 bg-secondary rounded-full w-32 overflow-hidden">
                             <div
-                              className={`h-full transition-all ${isDickens ? 'bg-[#1e3a5f]' : isBar ? 'bg-[#0d5c3a]' : 'bg-[#FF8C00]'}`}
+                              className={`h-full transition-all ${isDickens ? 'bg-[#1e3a5f]' : isHookah ? 'bg-[#1a237e]' : isRunners ? 'bg-[#4a3520]' : isBar ? 'bg-[#0d5c3a]' : 'bg-[#FF8C00]'}`}
                               style={{ width: `${stats.total > 0 ? (count / stats.total) * 100 : 0}%` }}
                             />
                           </div>
-                          <span className={`text-2xl font-bold w-8 text-right ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`}>{count}</span>
+                          <span className={`text-2xl font-bold w-8 text-right ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`}>{count}</span>
                         </div>
                       </div>
                     ))}
@@ -852,7 +852,7 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className={isDickens ? 'bg-white' : isBar ? 'bg-white' : ''}>
+              <Card className={isDickens || isHookah || isRunners ? 'bg-white' : isBar ? 'bg-white' : ''}>
                 <CardHeader>
                   <CardTitle>Список сотрудников с заменой</CardTitle>
                   <CardDescription>Требуется обновление формы в {selectedMonth}</CardDescription>
@@ -866,7 +866,7 @@ const Index = () => {
                       .map((emp) => (
                         <div
                           key={emp.id}
-                          className={`p-3 rounded-lg border-2 transition-colors ${isDickens ? 'border-[#1e3a5f]/20 bg-[#1e3a5f]/5 hover:bg-[#1e3a5f]/10' : isBar ? 'border-[#0d5c3a]/20 bg-[#0d5c3a]/5 hover:bg-[#0d5c3a]/10' : 'border-[#FF8C00]/20 bg-[#FF8C00]/5 hover:bg-[#FF8C00]/10'}`}
+                          className={`p-3 rounded-lg border-2 transition-colors ${isDickens ? 'border-[#1e3a5f]/20 bg-[#1e3a5f]/5 hover:bg-[#1e3a5f]/10' : isHookah ? 'border-[#1a237e]/20 bg-[#1a237e]/5 hover:bg-[#1a237e]/10' : isRunners ? 'border-[#4a3520]/20 bg-[#4a3520]/5 hover:bg-[#4a3520]/10' : isBar ? 'border-[#0d5c3a]/20 bg-[#0d5c3a]/5 hover:bg-[#0d5c3a]/10' : 'border-[#FF8C00]/20 bg-[#FF8C00]/5 hover:bg-[#FF8C00]/10'}`}
                         >
                           <div className="font-medium mb-2">{emp.name}</div>
                           <div className="flex flex-wrap gap-2">
@@ -891,7 +891,7 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className={`md:col-span-2 ${isDickens ? 'bg-white' : isBar ? 'bg-white' : ''}`}>
+              <Card className={`md:col-span-2 ${isDickens || isHookah || isRunners ? 'bg-white' : isBar ? 'bg-white' : ''}`}>
                 <CardHeader>
                   <CardTitle>Общая статистика по состоянию формы</CardTitle>
                   <CardDescription>Распределение состояния всех предметов в {selectedMonth}</CardDescription>
@@ -926,7 +926,7 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className={`md:col-span-2 ${isDickens ? 'bg-white' : isBar ? 'bg-white' : ''}`}>
+              <Card className={`md:col-span-2 ${isDickens || isHookah || isRunners ? 'bg-white' : isBar ? 'bg-white' : ''}`}>
                 <CardHeader>
                   <CardTitle>Статистика по размерам для заказа</CardTitle>
                   <CardDescription>Сколько каких размеров нужно заказать в {selectedMonth}</CardDescription>
@@ -935,7 +935,7 @@ const Index = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <h4 className="font-semibold mb-4 flex items-center gap-2">
-                        <Icon name="Shirt" size={18} className={isDickens ? 'text-[#1e3a5f]' : 'text-primary'} />
+                        <Icon name="Shirt" size={18} className={isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'} />
                         Футболки
                       </h4>
                       <div className="space-y-2">
@@ -975,7 +975,7 @@ const Index = () => {
 
                     <div>
                       <h4 className="font-semibold mb-4 flex items-center gap-2">
-                        <Icon name="User" size={18} className="text-primary" />
+                        <Icon name="User" size={18} className={isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'} />
                         Штаны
                       </h4>
                       <div className="space-y-2">
@@ -1015,7 +1015,7 @@ const Index = () => {
 
                     <div>
                       <h4 className="font-semibold mb-4 flex items-center gap-2">
-                        <Icon name="Component" size={18} className="text-primary" />
+                        <Icon name="Component" size={18} className={isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'} />
                         Кителя
                       </h4>
                       <div className="space-y-2">
@@ -1055,7 +1055,7 @@ const Index = () => {
 
                     <div>
                       <h4 className="font-semibold mb-4 flex items-center gap-2">
-                        <Icon name="BadgeCheck" size={18} className="text-primary" />
+                        <Icon name="BadgeCheck" size={18} className={isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'} />
                         Бейджики
                       </h4>
                       <div className="space-y-2">
