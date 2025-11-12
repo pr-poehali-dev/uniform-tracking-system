@@ -326,7 +326,7 @@ const Index = () => {
                 onClick={() => setShowPortMenu(!showPortMenu)}
                 className="flex items-center gap-2 text-sm md:text-base"
               >
-                <Icon name="Store" size={18} />
+                {restaurant === 'bar' ? <Icon name="Wine" size={18} /> : <Icon name="Store" size={18} />}
                 {restaurant === 'bar' ? 'Бар' : 'Port'}
                 <Icon name={showPortMenu ? "ChevronUp" : "ChevronDown"} size={16} />
               </Button>
@@ -361,7 +361,7 @@ const Index = () => {
                 onClick={() => setShowDickensMenu(!showDickensMenu)}
                 className="flex items-center gap-2 text-sm md:text-base"
               >
-                <Icon name="Utensils" size={18} />
+                {restaurant === 'hookah' ? <Icon name="Flame" size={18} /> : restaurant === 'runners' ? <Icon name="Zap" size={18} /> : <Icon name="Utensils" size={18} />}
                 {restaurant === 'hookah' ? 'Кальянные мастера' : restaurant === 'runners' ? 'Раннеры' : 'Диккенс'}
                 <Icon name={showDickensMenu ? "ChevronUp" : "ChevronDown"} size={16} />
               </Button>
@@ -394,7 +394,7 @@ const Index = () => {
                     }}
                     className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
                   >
-                    <Icon name="PersonStanding" size={16} />
+                    <Icon name="Zap" size={16} />
                     Раннеры
                   </button>
                 </div>
