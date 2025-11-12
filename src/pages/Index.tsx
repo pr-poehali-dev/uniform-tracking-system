@@ -99,8 +99,9 @@ const uniformLabels = {
 };
 
 const Index = () => {
-  const [restaurant, setRestaurant] = useState<'port' | 'dickens' | 'bar'>('port');
+  const [restaurant, setRestaurant] = useState<'port' | 'dickens' | 'bar' | 'hookah' | 'runners'>('port');
   const [showPortMenu, setShowPortMenu] = useState(false);
+  const [showDickensMenu, setShowDickensMenu] = useState(false);
   const [portEmployees, setPortEmployees] = useState<Employee[]>(() => {
     const saved = localStorage.getItem('portEmployees');
     return saved ? JSON.parse(saved) : initialEmployees;
@@ -113,9 +114,17 @@ const Index = () => {
     const saved = localStorage.getItem('barEmployees');
     return saved ? JSON.parse(saved) : initialEmployees;
   });
+  const [hookahEmployees, setHookahEmployees] = useState<Employee[]>(() => {
+    const saved = localStorage.getItem('hookahEmployees');
+    return saved ? JSON.parse(saved) : initialEmployees;
+  });
+  const [runnersEmployees, setRunnersEmployees] = useState<Employee[]>(() => {
+    const saved = localStorage.getItem('runnersEmployees');
+    return saved ? JSON.parse(saved) : initialEmployees;
+  });
   
-  const employees = restaurant === 'port' ? portEmployees : restaurant === 'dickens' ? dickensEmployees : barEmployees;
-  const setEmployees = restaurant === 'port' ? setPortEmployees : restaurant === 'dickens' ? setDickensEmployees : setBarEmployees;
+  const employees = restaurant === 'port' ? portEmployees : restaurant === 'dickens' ? dickensEmployees : restaurant === 'bar' ? barEmployees : restaurant === 'hookah' ? hookahEmployees : runnersEmployees;
+  const setEmployees = restaurant === 'port' ? setPortEmployees : restaurant === 'dickens' ? setDickensEmployees : restaurant === 'bar' ? setBarEmployees : restaurant === 'hookah' ? setHookahEmployees : setRunnersEmployees;
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCondition, setFilterCondition] = useState<string>('all');
@@ -139,6 +148,14 @@ const Index = () => {
   useEffect(() => {
     localStorage.setItem('barEmployees', JSON.stringify(barEmployees));
   }, [barEmployees]);
+  
+  useEffect(() => {
+    localStorage.setItem('hookahEmployees', JSON.stringify(hookahEmployees));
+  }, [hookahEmployees]);
+  
+  useEffect(() => {
+    localStorage.setItem('runnersEmployees', JSON.stringify(runnersEmployees));
+  }, [runnersEmployees]);
 
   const getConditionForMonth = (item: UniformItem, month: string): UniformCondition | null => {
     const record = item.monthlyRecords.find(r => r.month === month);
@@ -291,12 +308,14 @@ const Index = () => {
   const isDickens = restaurant === 'dickens';
   const isBar = restaurant === 'bar';
   const isPort = restaurant === 'port';
+  const isHookah = restaurant === 'hookah';
+  const isRunners = restaurant === 'runners';
   
   return (
-    <div className={`min-h-screen ${isDickens ? 'bg-gradient-to-br from-[#1e3a5f] via-[#2c5282] to-[#1a365d]' : isBar ? 'bg-gradient-to-br from-[#f5f5f5] via-[#e8e8e8] to-[#d4d4d4]' : 'bg-gradient-to-br from-white via-[#FEF7E0] to-[#F5F5DC]'}`}>
+    <div className={`min-h-screen ${isDickens || isHookah || isRunners ? 'bg-gradient-to-br from-[#1e3a5f] via-[#2c5282] to-[#1a365d]' : isBar ? 'bg-gradient-to-br from-[#f5f5f5] via-[#e8e8e8] to-[#d4d4d4]' : 'bg-gradient-to-br from-white via-[#FEF7E0] to-[#F5F5DC]'}`}>
       <div className="container mx-auto py-8 px-4">
         <div className="mb-6 md:mb-8 text-center">
-          <h1 className={`text-2xl md:text-4xl font-bold mb-2 flex items-center justify-center gap-2 md:gap-3 ${isDickens ? 'text-white' : isBar ? 'text-[#0d5c3a]' : 'text-[#C41E3A]'}`}>
+          <h1 className={`text-2xl md:text-4xl font-bold mb-2 flex items-center justify-center gap-2 md:gap-3 ${isDickens || isHookah || isRunners ? 'text-white' : isBar ? 'text-[#0d5c3a]' : 'text-[#C41E3A]'}`}>
             <Icon name="ShieldCheck" size={32} className="md:w-10 md:h-10" />
             Учёт формы сотрудников
           </h1>
@@ -336,45 +355,82 @@ const Index = () => {
                 </div>
               )}
             </div>
-            <Button
-              variant={restaurant === 'dickens' ? 'default' : 'outline'}
-              onClick={() => setRestaurant('dickens')}
-              className="flex items-center gap-2 text-sm md:text-base"
-            >
-              <Icon name="Utensils" size={18} />
-              Диккенс
-            </Button>
+            <div className="relative">
+              <Button
+                variant={(restaurant === 'dickens' || restaurant === 'hookah' || restaurant === 'runners') ? 'default' : 'outline'}
+                onClick={() => setShowDickensMenu(!showDickensMenu)}
+                className="flex items-center gap-2 text-sm md:text-base"
+              >
+                <Icon name="Utensils" size={18} />
+                {restaurant === 'hookah' ? 'Кальянные мастера' : restaurant === 'runners' ? 'Раннеры' : 'Диккенс'}
+                <Icon name={showDickensMenu ? "ChevronUp" : "ChevronDown"} size={16} />
+              </Button>
+              {showDickensMenu && (
+                <div className="absolute top-full left-0 mt-2 bg-white border rounded-md shadow-lg z-50 min-w-[180px]">
+                  <button
+                    onClick={() => {
+                      setRestaurant('dickens');
+                      setShowDickensMenu(false);
+                    }}
+                    className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
+                  >
+                    <Icon name="Utensils" size={16} />
+                    Диккенс
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRestaurant('hookah');
+                      setShowDickensMenu(false);
+                    }}
+                    className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
+                  >
+                    <Icon name="Flame" size={16} />
+                    Кальянные мастера
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRestaurant('runners');
+                      setShowDickensMenu(false);
+                    }}
+                    className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
+                  >
+                    <Icon name="PersonStanding" size={16} />
+                    Раннеры
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
-          <Card className={`border-2 hover:shadow-lg transition-all ${isDickens ? 'bg-white border-[#1e3a5f]/30' : isBar ? 'bg-white border-[#0d5c3a]/30' : 'border-primary/20'}`}>
+          <Card className={`border-2 hover:shadow-lg transition-all ${isDickens || isHookah || isRunners ? 'bg-white border-[#1e3a5f]/30' : isBar ? 'bg-white border-[#0d5c3a]/30' : 'border-primary/20'}`}>
             <CardHeader className="pb-2 md:pb-3 p-4 md:p-6">
               <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-1.5 md:gap-2">
-                <Icon name="Users" size={16} className={`md:w-[18px] md:h-[18px] ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
+                <Icon name="Users" size={16} className={`md:w-[18px] md:h-[18px] ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
                 Всего сотрудников
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 md:p-6 pt-0">
-              <div className={`text-2xl md:text-3xl font-bold ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`}>{stats.total}</div>
+              <div className={`text-2xl md:text-3xl font-bold ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`}>{stats.total}</div>
             </CardContent>
           </Card>
 
-          <Card className={`border-2 hover:shadow-lg transition-all ${isDickens ? 'bg-white border-[#1e3a5f]/30' : isBar ? 'bg-white border-[#0d5c3a]/30' : 'border-[#FF8C00]/20'}`}>
+          <Card className={`border-2 hover:shadow-lg transition-all ${isDickens || isHookah || isRunners ? 'bg-white border-[#1e3a5f]/30' : isBar ? 'bg-white border-[#0d5c3a]/30' : 'border-[#FF8C00]/20'}`}>
             <CardHeader className="pb-2 md:pb-3 p-4 md:p-6">
               <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-1.5 md:gap-2">
-                <Icon name="AlertCircle" size={16} className={`md:w-[18px] md:h-[18px] ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`} />
+                <Icon name="AlertCircle" size={16} className={`md:w-[18px] md:h-[18px] ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`} />
                 <span className="truncate">Нужна замена ({selectedMonth})</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 md:p-6 pt-0">
-              <div className={`text-2xl md:text-3xl font-bold ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`}>{stats.needsReplacement}</div>
+              <div className={`text-2xl md:text-3xl font-bold ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`}>{stats.needsReplacement}</div>
             </CardContent>
           </Card>
         </div>
 
         <Tabs defaultValue="inventory" className="w-full">
-          <TabsList className={`grid w-full grid-cols-2 md:grid-cols-4 mb-4 md:mb-6 h-auto ${isDickens ? 'bg-white/10' : isBar ? 'bg-white/20' : ''}`}>
+          <TabsList className={`grid w-full grid-cols-2 md:grid-cols-4 mb-4 md:mb-6 h-auto ${isDickens || isHookah || isRunners ? 'bg-white/10' : isBar ? 'bg-white/20' : ''}`}>
             <TabsTrigger value="inventory" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm py-2 md:py-2.5">
               <Icon name="ClipboardList" size={16} className="md:w-[18px] md:h-[18px]" />
               <span className="hidden sm:inline">Учёт формы</span>
@@ -398,14 +454,14 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="inventory" className="animate-fade-in">
-            <Card className={isDickens ? 'bg-white' : isBar ? 'bg-white' : ''}>
+            <Card className={isDickens || isHookah || isRunners ? 'bg-white' : isBar ? 'bg-white' : ''}>
               <CardHeader className="p-4 md:p-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0 mb-3 md:mb-4">
                   <div>
                     <CardTitle className="text-base md:text-lg">Учёт состояния формы</CardTitle>
                     <CardDescription className="text-xs md:text-sm">Отслеживайте состояние формы каждого сотрудника</CardDescription>
                   </div>
-                  <Button onClick={addEmployee} className={`flex items-center gap-1.5 md:gap-2 text-xs md:text-sm w-full sm:w-auto ${isDickens ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : isBar ? 'bg-[#0d5c3a] hover:bg-[#094d2e]' : ''}`} size="sm">
+                  <Button onClick={addEmployee} className={`flex items-center gap-1.5 md:gap-2 text-xs md:text-sm w-full sm:w-auto ${isDickens || isHookah || isRunners ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : isBar ? 'bg-[#0d5c3a] hover:bg-[#094d2e]' : ''}`} size="sm">
                     <Icon name="UserPlus" size={16} className="md:w-[18px] md:h-[18px]" />
                     <span className="hidden sm:inline">Добавить сотрудника</span>
                     <span className="sm:hidden">Добавить</span>
@@ -545,7 +601,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="order" className="animate-fade-in">
-            <Card className={isDickens ? 'bg-white' : isBar ? 'bg-white' : ''}>
+            <Card className={isDickens || isHookah || isRunners ? 'bg-white' : isBar ? 'bg-white' : ''}>
               <CardHeader className="p-4 md:p-6">
                 <CardTitle className="text-base md:text-lg">Заказать форму</CardTitle>
                 <CardDescription className="text-xs md:text-sm">Выберите сотрудника и укажите необходимые размеры</CardDescription>
@@ -571,7 +627,7 @@ const Index = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <div>
                       <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
-                        <Icon name="Shirt" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
+                        <Icon name="Shirt" size={14} className={`md:w-4 md:h-4 ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
                         Футболка
                       </label>
                       <Select
@@ -596,7 +652,7 @@ const Index = () => {
 
                     <div>
                       <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
-                        <Icon name="User" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
+                        <Icon name="User" size={14} className={`md:w-4 md:h-4 ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
                         Штаны
                       </label>
                       <Select
@@ -619,7 +675,7 @@ const Index = () => {
 
                     <div>
                       <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
-                        <Icon name="Component" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
+                        <Icon name="Component" size={14} className={`md:w-4 md:h-4 ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
                         Китель
                       </label>
                       <Select
@@ -642,7 +698,7 @@ const Index = () => {
 
                     <div>
                       <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
-                        <Icon name="BadgeCheck" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
+                        <Icon name="BadgeCheck" size={14} className={`md:w-4 md:h-4 ${isDickens || isHookah || isRunners ? 'text-[#1e3a5f]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
                         Бейджик
                       </label>
                       <Select
@@ -667,7 +723,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="issue" className="animate-fade-in">
-            <Card className={isDickens ? 'bg-white' : isBar ? 'bg-white' : ''}>
+            <Card className={isDickens || isHookah || isRunners ? 'bg-white' : isBar ? 'bg-white' : ''}>
               <CardHeader className="p-4 md:p-6">
                 <CardTitle className="text-base md:text-lg">Выдача новой формы</CardTitle>
                 <CardDescription className="text-xs md:text-sm">Укажите дату выдачи новой формы сотруднику</CardDescription>
