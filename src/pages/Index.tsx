@@ -339,6 +339,7 @@ const Index = () => {
                     }}
                     className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
                   >
+                    <div className="w-3 h-3 rounded-full bg-[#C41E3A]"></div>
                     <Icon name="Store" size={16} />
                     Port
                   </button>
@@ -349,6 +350,7 @@ const Index = () => {
                     }}
                     className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
                   >
+                    <div className="w-3 h-3 rounded-full bg-[#0d5c3a]"></div>
                     <Icon name="Wine" size={16} />
                     Бар
                   </button>
@@ -374,6 +376,7 @@ const Index = () => {
                     }}
                     className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
                   >
+                    <div className="w-3 h-3 rounded-full bg-[#1e3a5f]"></div>
                     <Icon name="Utensils" size={16} />
                     Диккенс
                   </button>
@@ -384,6 +387,7 @@ const Index = () => {
                     }}
                     className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
                   >
+                    <div className="w-3 h-3 rounded-full bg-[#1a237e]"></div>
                     <Icon name="Flame" size={16} />
                     Кальянные мастера
                   </button>
@@ -394,6 +398,7 @@ const Index = () => {
                     }}
                     className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
                   >
+                    <div className="w-3 h-3 rounded-full bg-[#4a3520]"></div>
                     <Icon name="Zap" size={16} />
                     Раннеры
                   </button>
