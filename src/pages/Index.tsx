@@ -511,8 +511,8 @@ const Index = () => {
                       <TableRow>
                         <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Имя</TableHead>
                         <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Футболка</TableHead>
-                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Штаны</TableHead>
-                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Китель</TableHead>
+                        {!isRunners && <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Штаны</TableHead>}
+                        {!isRunners && <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Китель</TableHead>}
                         <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Бейджик</TableHead>
                         <TableHead className="font-bold text-xs md:text-sm w-[60px] md:w-[100px]">Действия</TableHead>
                       </TableRow>
@@ -527,7 +527,9 @@ const Index = () => {
                               className="font-medium border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary text-xs md:text-sm h-8 md:h-9"
                             />
                           </TableCell>
-                          {(['tshirt', 'pants', 'jacket', 'badge'] as const).map((type) => {
+                          {(['tshirt', 'pants', 'jacket', 'badge'] as const)
+                            .filter(type => !isRunners || (type !== 'pants' && type !== 'jacket'))
+                            .map((type) => {
                             const condition = getConditionForMonth(emp.uniform[type], selectedMonth);
                             return (
                               <TableCell key={type} className="p-2 md:p-4">
@@ -655,51 +657,55 @@ const Index = () => {
                       </Select>
                     </div>
 
-                    <div>
-                      <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
-                        <Icon name="User" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#0f172a]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
-                        Штаны
-                      </label>
-                      <Select
-                        value={employees.find(e => e.id === parseInt(selectedEmployee))?.uniform.pants.size}
-                        onValueChange={(value) =>
-                          updateSize(parseInt(selectedEmployee), 'pants', value as Size)
-                        }
-                      >
-                        <SelectTrigger className="h-9 md:h-10 text-sm md:text-base">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="not_needed">Не нужно</SelectItem>
-                          <SelectItem value="1">Размер 1</SelectItem>
-                          <SelectItem value="2">Размер 2</SelectItem>
-                          <SelectItem value="3">Размер 3</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {!isRunners && (
+                      <div>
+                        <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
+                          <Icon name="User" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#0f172a]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
+                          Штаны
+                        </label>
+                        <Select
+                          value={employees.find(e => e.id === parseInt(selectedEmployee))?.uniform.pants.size}
+                          onValueChange={(value) =>
+                            updateSize(parseInt(selectedEmployee), 'pants', value as Size)
+                          }
+                        >
+                          <SelectTrigger className="h-9 md:h-10 text-sm md:text-base">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="not_needed">Не нужно</SelectItem>
+                            <SelectItem value="1">Размер 1</SelectItem>
+                            <SelectItem value="2">Размер 2</SelectItem>
+                            <SelectItem value="3">Размер 3</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
 
-                    <div>
-                      <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
-                        <Icon name="Component" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#0f172a]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
-                        Китель
-                      </label>
-                      <Select
-                        value={employees.find(e => e.id === parseInt(selectedEmployee))?.uniform.jacket.size}
-                        onValueChange={(value) =>
-                          updateSize(parseInt(selectedEmployee), 'jacket', value as Size)
-                        }
-                      >
-                        <SelectTrigger className="h-9 md:h-10 text-sm md:text-base">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="not_needed">Не нужно</SelectItem>
-                          <SelectItem value="1">Размер 1</SelectItem>
-                          <SelectItem value="2">Размер 2</SelectItem>
-                          <SelectItem value="3">Размер 3</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {!isRunners && (
+                      <div>
+                        <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
+                          <Icon name="Component" size={14} className={`md:w-4 md:h-4 ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#0f172a]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`} />
+                          Китель
+                        </label>
+                        <Select
+                          value={employees.find(e => e.id === parseInt(selectedEmployee))?.uniform.jacket.size}
+                          onValueChange={(value) =>
+                            updateSize(parseInt(selectedEmployee), 'jacket', value as Size)
+                          }
+                        >
+                          <SelectTrigger className="h-9 md:h-10 text-sm md:text-base">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="not_needed">Не нужно</SelectItem>
+                            <SelectItem value="1">Размер 1</SelectItem>
+                            <SelectItem value="2">Размер 2</SelectItem>
+                            <SelectItem value="3">Размер 3</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
 
                     <div>
                       <label className="text-xs md:text-sm font-medium mb-2 block flex items-center gap-1.5 md:gap-2">
@@ -753,8 +759,8 @@ const Index = () => {
                       <TableRow>
                         <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Имя</TableHead>
                         <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Футболка</TableHead>
-                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Штаны</TableHead>
-                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Китель</TableHead>
+                        {!isRunners && <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Штаны</TableHead>}
+                        {!isRunners && <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Китель</TableHead>}
                         <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Бейджик</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -768,7 +774,9 @@ const Index = () => {
                         .map((emp) => (
                           <TableRow key={emp.id} className="hover:bg-secondary/50 transition-colors">
                             <TableCell className="font-medium text-xs md:text-sm p-2 md:p-4">{emp.name}</TableCell>
-                            {(['tshirt', 'pants', 'jacket', 'badge'] as const).map((type) => {
+                            {(['tshirt', 'pants', 'jacket', 'badge'] as const)
+                              .filter(type => !isRunners || (type !== 'pants' && type !== 'jacket'))
+                              .map((type) => {
                               const condition = getConditionForMonth(emp.uniform[type], selectedMonth);
                               const record = emp.uniform[type].monthlyRecords.find(r => r.month === selectedMonth);
                               
