@@ -14,6 +14,10 @@ def get_db_connection():
     dsn = os.environ.get('DATABASE_URL')
     return psycopg2.connect(dsn, cursor_factory=RealDictCursor)
 
+def escape_sql_string(s: str) -> str:
+    """Escape single quotes for SQL string literals"""
+    return s.replace("'", "''")
+
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
     
@@ -41,12 +45,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if method == 'GET':
             params = event.get('queryStringParameters') or {}
             restaurant = params.get('restaurant', 'port')
+            restaurant_escaped = escape_sql_string(restaurant)
             
-            cur.execute("""
+            cur.execute(f"""
                 SELECT r.id as restaurant_id, r.name as restaurant_name
                 FROM restaurants r
-                WHERE r.name = %s
-            """, (restaurant,))
+                WHERE r.name = '{restaurant_escaped}'
+            """)
             restaurant_data = cur.fetchone()
             
             if not restaurant_data:
@@ -58,7 +63,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             restaurant_id = restaurant_data['restaurant_id']
             
-            cur.execute("""
+            cur.execute(f"""
                 SELECT 
                     e.id as employee_id,
                     e.name as employee_name,
@@ -75,10 +80,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 FROM employees e
                 LEFT JOIN uniform_items ui ON ui.employee_id = e.id
                 LEFT JOIN monthly_records mr ON mr.uniform_item_id = ui.id
-                WHERE e.restaurant_id = %s
+                WHERE e.restaurant_id = {restaurant_id}
                 GROUP BY e.id, e.name, ui.id, ui.item_type, ui.size
                 ORDER BY e.id, ui.item_type
-            """, (restaurant_id,))
+            """)
             
             rows = cur.fetchall()
             
@@ -127,7 +132,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'Name is required'})
                 }
             
-            cur.execute("SELECT id FROM restaurants WHERE name = %s", (restaurant,))
+            restaurant_escaped = escape_sql_string(restaurant)
+            employee_name_escaped = escape_sql_string(employee_name)
+            
+            cur.execute(f"SELECT id FROM restaurants WHERE name = '{restaurant_escaped}'")
             restaurant_data = cur.fetchone()
             
             if not restaurant_data:
@@ -139,12 +147,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             restaurant_id = restaurant_data['id']
             
-            cur.execute("""
+            cur.execute(f"""
                 INSERT INTO employees (restaurant_id, name)
-                VALUES (%s, %s)
+                VALUES ({restaurant_id}, '{employee_name_escaped}')
                 ON CONFLICT (restaurant_id, name) DO UPDATE SET name = EXCLUDED.name
                 RETURNING id
-            """, (restaurant_id, employee_name))
+            """)
             
             employee_id = cur.fetchone()['id']
             
@@ -156,11 +164,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             ]
             
             for item_type, size in uniform_items:
-                cur.execute("""
+                cur.execute(f"""
                     INSERT INTO uniform_items (employee_id, item_type, size)
-                    VALUES (%s, %s, %s)
+                    VALUES ({employee_id}, '{item_type}', '{size}')
                     ON CONFLICT (employee_id, item_type) DO NOTHING
-                """, (employee_id, item_type, size))
+                """)
             
             conn.commit()
             cur.close()
@@ -188,13 +196,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 size = item_data.get('size')
                 monthly_records = item_data.get('monthlyRecords', [])
                 
-                cur.execute("""
+                item_type_escaped = escape_sql_string(item_type)
+                size_escaped = escape_sql_string(str(size))
+                
+                cur.execute(f"""
                     INSERT INTO uniform_items (employee_id, item_type, size)
-                    VALUES (%s, %s, %s)
+                    VALUES ({employee_id}, '{item_type_escaped}', '{size_escaped}')
                     ON CONFLICT (employee_id, item_type)
                     DO UPDATE SET size = EXCLUDED.size
                     RETURNING id
-                """, (employee_id, item_type, size))
+                """)
                 
                 uniform_item_id = cur.fetchone()['id']
                 
@@ -203,15 +214,19 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     condition = record.get('condition')
                     issue_date = record.get('issueDate')
                     
-                    cur.execute("""
+                    month_escaped = escape_sql_string(month)
+                    condition_escaped = escape_sql_string(condition)
+                    issue_date_sql = f"'{escape_sql_string(issue_date)}'" if issue_date else 'NULL'
+                    
+                    cur.execute(f"""
                         INSERT INTO monthly_records (uniform_item_id, month, condition, issue_date)
-                        VALUES (%s, %s, %s, %s)
+                        VALUES ({uniform_item_id}, '{month_escaped}', '{condition_escaped}', {issue_date_sql})
                         ON CONFLICT (uniform_item_id, month)
                         DO UPDATE SET 
                             condition = EXCLUDED.condition,
                             issue_date = EXCLUDED.issue_date,
                             updated_at = CURRENT_TIMESTAMP
-                    """, (uniform_item_id, month, condition, issue_date))
+                    """)
             
             conn.commit()
             cur.close()
@@ -220,7 +235,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 200,
                 'headers': headers,
-                'body': json.dumps({'message': 'Employee updated successfully'})
+                'body': json.dumps({'success': True})
             }
         
         elif method == 'DELETE':
@@ -234,7 +249,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'Employee ID is required'})
                 }
             
-            cur.execute("UPDATE employees SET name = name WHERE id = %s", (employee_id,))
+            cur.execute(f"DELETE FROM employees WHERE id = {employee_id}")
             
             conn.commit()
             cur.close()
@@ -243,16 +258,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 200,
                 'headers': headers,
-                'body': json.dumps({'message': 'Employee deleted successfully'})
+                'body': json.dumps({'success': True})
             }
         
-        else:
-            return {
-                'statusCode': 405,
-                'headers': headers,
-                'body': json.dumps({'error': 'Method not allowed'})
-            }
-    
+        return {
+            'statusCode': 405,
+            'headers': headers,
+            'body': json.dumps({'error': 'Method not allowed'})
+        }
+        
     except Exception as e:
         return {
             'statusCode': 500,

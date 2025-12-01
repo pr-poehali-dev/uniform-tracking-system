@@ -555,7 +555,7 @@ const Index = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Имя</TableHead>
+                        <TableHead className="font-bold text-xs md:text-sm min-w-[120px] md:min-w-[150px]">Имя</TableHead>
                         <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Футболка</TableHead>
                         {!isRunners && <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Штаны</TableHead>}
                         {!isRunners && <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Китель</TableHead>}
@@ -566,11 +566,11 @@ const Index = () => {
                     <TableBody>
                       {filteredEmployees.map((emp) => (
                         <TableRow key={emp.id} className="hover:bg-secondary/50 transition-colors">
-                          <TableCell className="p-2 md:p-4">
+                          <TableCell className="p-2 md:p-4 min-w-[120px] md:min-w-[150px]">
                             <Input
                               value={emp.name}
                               onChange={(e) => updateEmployeeName(emp.id, e.target.value)}
-                              className="font-medium border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary text-xs md:text-sm h-8 md:h-9"
+                              className="font-medium border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary text-sm md:text-base h-8 md:h-9 w-full"
                             />
                           </TableCell>
                           {(['tshirt', 'pants', 'jacket', 'badge'] as const)
