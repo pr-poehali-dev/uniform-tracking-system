@@ -5,7 +5,7 @@ export interface UniformItem {
   size: string;
   monthlyRecords: Array<{
     month: string;
-    condition: 'good' | 'bad' | 'needs_replacement';
+    condition: 'good' | 'bad';
     issueDate?: string;
   }>;
 }
