@@ -276,20 +276,20 @@ const Index = () => {
     }
   };
 
+  const sizeLabels: Record<Size, string> = {
+    'XS': 'XS',
+    'S': 'S',
+    'M': 'M',
+    'L': 'L',
+    'XL': 'XL',
+    '1': 'Размер 1',
+    '2': 'Размер 2',
+    '3': 'Размер 3',
+    'needed': 'Нужен',
+    'not_needed': 'Не нужен'
+  };
+
   const exportToExcel = () => {
-    const sizeLabels: Record<Size, string> = {
-      'XS': 'XS',
-      'S': 'S',
-      'M': 'M',
-      'L': 'L',
-      'XL': 'XL',
-      '1': 'Размер 1',
-      '2': 'Размер 2',
-      '3': 'Размер 3',
-      'needed': 'Нужен',
-      'not_needed': 'Не нужно'
-    };
-    
     const wb = XLSX.utils.book_new();
     
     MONTHS.forEach((month) => {
@@ -297,7 +297,7 @@ const Index = () => {
       
       employees.forEach((emp) => {
         const row: any = {
-          'Имя сотрудника': emp.name,
+          'Имя': emp.name,
         };
 
         (['tshirt', 'pants', 'jacket', 'badge'] as const).forEach((type) => {
@@ -306,7 +306,6 @@ const Index = () => {
           const condition = record?.condition;
           row[uniformLabels[type]] = condition ? conditionLabels[condition] : 'Не заполнено';
           row[`${uniformLabels[type]} - Размер`] = sizeLabels[item.size] || item.size;
-
         });
 
         data.push(row);
@@ -341,101 +340,62 @@ const Index = () => {
   return (
     <div className={`min-h-screen ${isDickens ? 'bg-gradient-to-br from-[#1e3a5f] via-[#2c5282] to-[#1a365d]' : isHookah ? 'bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#334155]' : isRunners ? 'bg-gradient-to-br from-[#4a3520] via-[#5d442f] to-[#4a3520]' : isBar ? 'bg-gradient-to-br from-[#f5f5f5] via-[#e8e8e8] to-[#d4d4d4]' : 'bg-gradient-to-br from-white via-[#FEF7E0] to-[#F5F5DC]'}`}>
       <div className="container mx-auto py-8 px-4">
-        <div className="mb-6 md:mb-8 text-center">
-          <h1 className={`text-2xl md:text-4xl font-bold mb-2 flex items-center justify-center gap-2 md:gap-3 ${isDickens || isHookah ? 'text-white' : isRunners ? 'text-[#F5F5DC]' : isBar ? 'text-[#0d5c3a]' : 'text-[#C41E3A]'}`}>
-            <Icon name="ShieldCheck" size={32} className="md:w-10 md:h-10" />
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 md:mb-8 gap-4">
+          <h1 className={`text-3xl md:text-4xl font-bold ${isDickens || isHookah ? 'text-white' : isRunners ? 'text-[#F5F5DC]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`}>
             Учёт формы сотрудников
           </h1>
-          <div className="flex items-center justify-center gap-3 mt-4">
+          <div className="flex gap-2 flex-wrap">
             <div className="relative">
-              <Button
-                variant={(restaurant === 'port' || restaurant === 'bar') ? 'default' : 'outline'}
-                onClick={() => setShowPortMenu(!showPortMenu)}
-                className="flex items-center gap-2 text-sm md:text-base"
+              <Button 
+                onClick={() => {
+                  setRestaurant('port');
+                  setShowPortMenu(!showPortMenu);
+                  setShowDickensMenu(false);
+                }} 
+                className={`${restaurant === 'port' ? 'bg-primary hover:bg-primary/90' : 'bg-white hover:bg-gray-100 text-gray-700'} flex items-center gap-2`}
               >
-                {restaurant === 'bar' ? <Icon name="Wine" size={18} /> : <Icon name="Store" size={18} />}
-                {restaurant === 'bar' ? 'Бар' : 'Port'}
-                <Icon name={showPortMenu ? "ChevronUp" : "ChevronDown"} size={16} />
+                <Icon name="Ship" size={18} />
+                <span className="hidden sm:inline">Порт</span>
               </Button>
-              {showPortMenu && (
-                <div className="absolute top-full left-0 mt-2 bg-white border rounded-md shadow-lg z-50 min-w-[120px]">
-                  <button
-                    onClick={() => {
-                      setRestaurant('port');
-                      setShowPortMenu(false);
-                    }}
-                    className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
-                  >
-                    <div className="w-3 h-3 rounded-full bg-[#C41E3A]"></div>
-                    <Icon name="Store" size={16} />
-                    Port
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRestaurant('bar');
-                      setShowPortMenu(false);
-                    }}
-                    className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
-                  >
-                    <div className="w-3 h-3 rounded-full bg-[#0d5c3a]"></div>
-                    <Icon name="Wine" size={16} />
-                    Бар
-                  </button>
-                </div>
-              )}
             </div>
             <div className="relative">
-              <Button
-                variant={(restaurant === 'dickens' || restaurant === 'hookah' || restaurant === 'runners') ? 'default' : 'outline'}
-                onClick={() => setShowDickensMenu(!showDickensMenu)}
-                className="flex items-center gap-2 text-sm md:text-base"
+              <Button 
+                onClick={() => {
+                  setRestaurant('dickens');
+                  setShowDickensMenu(!showDickensMenu);
+                  setShowPortMenu(false);
+                }} 
+                className={`${restaurant === 'dickens' ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : 'bg-white hover:bg-gray-100 text-gray-700'} flex items-center gap-2`}
               >
-                {restaurant === 'hookah' ? <Icon name="Flame" size={18} /> : restaurant === 'runners' ? <Icon name="Zap" size={18} /> : <Icon name="Utensils" size={18} />}
-                {restaurant === 'hookah' ? 'Кальянные мастера' : restaurant === 'runners' ? 'Раннеры' : 'Диккенс'}
-                <Icon name={showDickensMenu ? "ChevronUp" : "ChevronDown"} size={16} />
+                <Icon name="BookOpen" size={18} />
+                <span className="hidden sm:inline">Диккенс</span>
               </Button>
-              {showDickensMenu && (
-                <div className="absolute top-full left-0 mt-2 bg-white border rounded-md shadow-lg z-50 min-w-[180px]">
-                  <button
-                    onClick={() => {
-                      setRestaurant('dickens');
-                      setShowDickensMenu(false);
-                    }}
-                    className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
-                  >
-                    <div className="w-3 h-3 rounded-full bg-[#1e3a5f]"></div>
-                    <Icon name="Utensils" size={16} />
-                    Диккенс
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRestaurant('hookah');
-                      setShowDickensMenu(false);
-                    }}
-                    className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
-                  >
-                    <div className="w-3 h-3 rounded-full bg-[#0f172a]"></div>
-                    <Icon name="Flame" size={16} />
-                    Кальянные мастера
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRestaurant('runners');
-                      setShowDickensMenu(false);
-                    }}
-                    className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
-                  >
-                    <div className="w-3 h-3 rounded-full bg-[#4a3520]"></div>
-                    <Icon name="Zap" size={16} />
-                    Раннеры
-                  </button>
-                </div>
-              )}
             </div>
+            <Button 
+              onClick={() => setRestaurant('bar')} 
+              className={`${restaurant === 'bar' ? 'bg-[#0d5c3a] hover:bg-[#094d2e]' : 'bg-white hover:bg-gray-100 text-gray-700'} flex items-center gap-2`}
+            >
+              <Icon name="Beer" size={18} />
+              <span className="hidden sm:inline">Бар</span>
+            </Button>
+            <Button 
+              onClick={() => setRestaurant('hookah')} 
+              className={`${restaurant === 'hookah' ? 'bg-[#0f172a] hover:bg-[#020617]' : 'bg-white hover:bg-gray-100 text-gray-700'} flex items-center gap-2`}
+            >
+              <Icon name="Cloudy" size={18} />
+              <span className="hidden sm:inline">Кальянная</span>
+            </Button>
+            <Button 
+              onClick={() => setRestaurant('runners')} 
+              className={`${restaurant === 'runners' ? 'bg-[#4a3520] hover:bg-[#2d1f12]' : 'bg-white hover:bg-gray-100 text-gray-700'} flex items-center gap-2`}
+            >
+              <Icon name="Users" size={18} />
+              <span className="hidden sm:inline">Раннерс</span>
+            </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
+        <div className="grid grid-cols-1 gap-4 md:gap-6 mb-6 md:mb-8">
           <Card className={`border-2 hover:shadow-lg transition-all ${isDickens ? 'bg-white border-[#1e3a5f]/30' : isHookah ? 'bg-white border-[#0f172a]/30' : isRunners ? 'bg-white border-[#4a3520]/30' : isBar ? 'bg-white border-[#0d5c3a]/30' : 'border-primary/20'}`}>
             <CardHeader className="pb-2 md:pb-3 p-4 md:p-6">
               <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-1.5 md:gap-2">
@@ -447,8 +407,6 @@ const Index = () => {
               <div className={`text-2xl md:text-3xl font-bold ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#0f172a]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}`}>{stats.total}</div>
             </CardContent>
           </Card>
-
-
         </div>
 
         <Tabs defaultValue="inventory" className="w-full">
@@ -515,7 +473,6 @@ const Index = () => {
                       <SelectItem value="all">Все состояния</SelectItem>
                       <SelectItem value="good">Хорошее</SelectItem>
                       <SelectItem value="bad">Плохое</SelectItem>
-
                     </SelectContent>
                   </Select>
                 </div>
@@ -742,377 +699,6 @@ const Index = () => {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  );
-};
-
-export default Index;
-            <Card className={isDickens || isHookah || isRunners ? 'bg-white' : isBar ? 'bg-white' : ''}>
-              <CardHeader className="p-4 md:p-6">
-                <CardTitle className="text-base md:text-lg">Выдача новой формы</CardTitle>
-                <CardDescription className="text-xs md:text-sm">Укажите дату выдачи новой формы сотруднику</CardDescription>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 mt-3 md:mt-4">
-                  <label className="text-xs md:text-sm font-medium">Месяц:</label>
-                  <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                    <SelectTrigger className="w-full sm:w-[180px] md:w-[200px] h-9 md:h-10 text-sm md:text-base">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {MONTHS.map((month) => (
-                        <SelectItem key={month} value={month}>{month}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardHeader>
-              <CardContent className="p-4 md:p-6">
-                <div className="rounded-md border overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Имя</TableHead>
-                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Футболка</TableHead>
-                        {!isRunners && <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Штаны</TableHead>}
-                        {!isRunners && <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Китель</TableHead>}
-                        <TableHead className="font-bold text-xs md:text-sm whitespace-nowrap">Бейджик</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {employees
-                        .filter((emp) =>
-                          Object.values(emp.uniform).some(
-                            (item) => getConditionForMonth(item, selectedMonth) === 'needs_replacement'
-                          )
-                        )
-                        .map((emp) => (
-                          <TableRow key={emp.id} className="hover:bg-secondary/50 transition-colors">
-                            <TableCell className="font-medium text-xs md:text-sm p-2 md:p-4">{emp.name}</TableCell>
-                            {(['tshirt', 'pants', 'jacket', 'badge'] as const)
-                              .filter(type => !isRunners || (type !== 'pants' && type !== 'jacket'))
-                              .map((type) => {
-                              const condition = getConditionForMonth(emp.uniform[type], selectedMonth);
-                              const record = emp.uniform[type].monthlyRecords.find(r => r.month === selectedMonth);
-                              
-                              if (condition !== 'needs_replacement') {
-                                return <TableCell key={type} className="text-xs md:text-sm p-2 md:p-4">-</TableCell>;
-                              }
-
-                              return (
-                                <TableCell key={type} className="p-2 md:p-4">
-                                  <Input
-                                    type="date"
-                                    value={record?.issueDate || ''}
-                                    onChange={(e) => {
-                                      updateCondition(emp.id, type, 'needs_replacement', e.target.value);
-                                    }}
-                                    className="w-full max-w-[130px] md:max-w-[150px] h-8 md:h-9 text-xs md:text-sm"
-                                  />
-                                </TableCell>
-                              );
-                            })}
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                  {employees.filter((emp) =>
-                    Object.values(emp.uniform).some(
-                      (item) => getConditionForMonth(item, selectedMonth) === 'needs_replacement'
-                    )
-                  ).length === 0 && (
-                    <div className="text-center text-muted-foreground py-6 md:py-8 text-xs md:text-sm px-4">
-                      Нет сотрудников, требующих выдачу новой формы в этом месяце
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="stats" className="animate-fade-in">
-            <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex items-center gap-4">
-                <label className={`text-sm font-medium ${isDickens || isHookah ? 'text-white' : isRunners ? 'text-[#F5F5DC]' : isBar ? 'text-[#0d5c3a]' : ''}`}>Месяц отчета:</label>
-                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MONTHS.map((month) => (
-                      <SelectItem key={month} value={month}>{month}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button onClick={exportToExcel} className={`flex items-center gap-2 ${isDickens ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : isHookah ? 'bg-[#0f172a] hover:bg-[#020617]' : isRunners ? 'bg-[#4a3520] hover:bg-[#2d1f12]' : isBar ? 'bg-[#0d5c3a] hover:bg-[#094d2e]' : ''}`}>
-                <Icon name="FileDown" size={18} />
-                Экспорт в Excel
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className={isDickens || isHookah || isRunners ? 'bg-white' : isBar ? 'bg-white' : ''}>
-                <CardHeader>
-                  <CardTitle>Нужна замена по типам</CardTitle>
-                  <CardDescription>Количество предметов формы требующих замены в {selectedMonth}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {Object.entries(stats.byType).map(([type, count]) => (
-                      <div key={type} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${isDickens ? 'bg-[#1e3a5f]' : isHookah ? 'bg-[#0f172a]' : isRunners ? 'bg-[#4a3520]' : isBar ? 'bg-[#0d5c3a]' : 'bg-[#FF8C00]'}`} />
-                          <span className="font-medium">{uniformLabels[type as keyof typeof uniformLabels]}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="h-2 bg-secondary rounded-full w-32 overflow-hidden">
-                            <div
-                              className={`h-full transition-all ${isDickens ? 'bg-[#1e3a5f]' : isHookah ? 'bg-[#0f172a]' : isRunners ? 'bg-[#4a3520]' : isBar ? 'bg-[#0d5c3a]' : 'bg-[#FF8C00]'}`}
-                              style={{ width: `${stats.total > 0 ? (count / stats.total) * 100 : 0}%` }}
-                            />
-                          </div>
-                          <span className={`text-2xl font-bold w-8 text-right ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#0f172a]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`}>{count}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className={isDickens || isHookah || isRunners ? 'bg-white' : isBar ? 'bg-white' : ''}>
-                <CardHeader>
-                  <CardTitle>Список сотрудников с заменой</CardTitle>
-                  <CardDescription>Требуется обновление формы в {selectedMonth}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 max-h-[300px] overflow-y-auto">
-                    {employees
-                      .filter((emp) =>
-                        Object.values(emp.uniform).some((item) => getConditionForMonth(item, selectedMonth) === 'needs_replacement')
-                      )
-                      .map((emp) => (
-                        <div
-                          key={emp.id}
-                          className={`p-3 rounded-lg border-2 transition-colors ${isDickens ? 'border-[#1e3a5f]/20 bg-[#1e3a5f]/5 hover:bg-[#1e3a5f]/10' : isHookah ? 'border-[#0f172a]/20 bg-[#0f172a]/5 hover:bg-[#0f172a]/10' : isRunners ? 'border-[#4a3520]/20 bg-[#4a3520]/5 hover:bg-[#4a3520]/10' : isBar ? 'border-[#0d5c3a]/20 bg-[#0d5c3a]/5 hover:bg-[#0d5c3a]/10' : 'border-[#FF8C00]/20 bg-[#FF8C00]/5 hover:bg-[#FF8C00]/10'}`}
-                        >
-                          <div className="font-medium mb-2">{emp.name}</div>
-                          <div className="flex flex-wrap gap-2">
-                            {Object.entries(emp.uniform)
-                              .filter(([_, item]) => getConditionForMonth(item, selectedMonth) === 'needs_replacement')
-                              .map(([type, _]) => (
-                                <Badge key={type} variant="outline" className="bg-white">
-                                  {uniformLabels[type as keyof typeof uniformLabels]}
-                                </Badge>
-                              ))}
-                          </div>
-                        </div>
-                      ))}
-                    {employees.filter((emp) =>
-                      Object.values(emp.uniform).some((item) => getConditionForMonth(item, selectedMonth) === 'needs_replacement')
-                    ).length === 0 && (
-                      <div className="text-center text-muted-foreground py-8">
-                        Нет сотрудников, требующих замену формы в этом месяце
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className={`md:col-span-2 ${isDickens || isHookah || isRunners ? 'bg-white' : isBar ? 'bg-white' : ''}`}>
-                <CardHeader>
-                  <CardTitle>Общая статистика по состоянию формы</CardTitle>
-                  <CardDescription>Распределение состояния всех предметов в {selectedMonth}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {(['good', 'bad'] as const).map((condition) => {
-                      const count = employees.reduce(
-                        (acc, emp) =>
-                          acc +
-                          Object.values(emp.uniform).filter((item) => getConditionForMonth(item, selectedMonth) === condition).length,
-                        0
-                      );
-                      const total = employees.length * 4;
-                      const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
-
-                      return (
-                        <div
-                          key={condition}
-                          className="p-6 rounded-xl border-2 bg-gradient-to-br from-white to-secondary/30"
-                        >
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className={`w-4 h-4 rounded-full ${conditionColors[condition]}`} />
-                            <h3 className="font-bold text-lg">{conditionLabels[condition]}</h3>
-                          </div>
-                          <div className="text-4xl font-bold mb-2">{count}</div>
-                          <div className="text-sm text-muted-foreground">{percentage}% от всех предметов</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className={`md:col-span-2 ${isDickens || isHookah || isRunners ? 'bg-white' : isBar ? 'bg-white' : ''}`}>
-                <CardHeader>
-                  <CardTitle>Статистика по размерам для заказа</CardTitle>
-                  <CardDescription>Сколько каких размеров нужно заказать в {selectedMonth}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="font-semibold mb-4 flex items-center gap-2">
-                        <Icon name="Shirt" size={18} className={isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'} />
-                        Футболки
-                      </h4>
-                      <div className="space-y-2">
-                        {(() => {
-                          const sizeCounts: Record<string, number> = {};
-                          employees.forEach(emp => {
-                            if (getConditionForMonth(emp.uniform.tshirt, selectedMonth) === 'needs_replacement') {
-                              const size = emp.uniform.tshirt.size;
-                              if (size !== 'not_needed') {
-                                sizeCounts[size] = (sizeCounts[size] || 0) + 1;
-                              }
-                            }
-                          });
-                          return Object.entries(sizeCounts).map(([size, count]) => (
-                            <div key={size} className="flex justify-between items-center p-3 rounded-lg bg-secondary/30">
-                              <span className="font-medium">Размер {size}</span>
-                              <Badge variant="secondary" className="bg-primary text-white">
-                                {count} шт
-                              </Badge>
-                            </div>
-                          ));
-                        })()}
-                        {(() => {
-                          const sizeCounts: Record<string, number> = {};
-                          employees.forEach(emp => {
-                            if (getConditionForMonth(emp.uniform.tshirt, selectedMonth) === 'needs_replacement') {
-                              const size = emp.uniform.tshirt.size;
-                              sizeCounts[size] = (sizeCounts[size] || 0) + 1;
-                            }
-                          });
-                          return Object.keys(sizeCounts).length === 0 ? (
-                            <div className="text-muted-foreground text-sm">Нет футболок для заказа</div>
-                          ) : null;
-                        })()}
-                      </div>
-                    </div>
-
-                    {!isRunners && (
-                      <div>
-                        <h4 className="font-semibold mb-4 flex items-center gap-2">
-                          <Icon name="User" size={18} className={isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'} />
-                          Штаны
-                        </h4>
-                        <div className="space-y-2">
-                          {(() => {
-                            const sizeCounts: Record<string, number> = {};
-                            employees.forEach(emp => {
-                              if (getConditionForMonth(emp.uniform.pants, selectedMonth) === 'needs_replacement') {
-                                const size = emp.uniform.pants.size;
-                                if (size !== 'not_needed') {
-                                  sizeCounts[size] = (sizeCounts[size] || 0) + 1;
-                                }
-                              }
-                            });
-                            return Object.entries(sizeCounts).map(([size, count]) => (
-                              <div key={size} className="flex justify-between items-center p-3 rounded-lg bg-secondary/30">
-                                <span className="font-medium">Размер {size}</span>
-                                <Badge variant="secondary" className="bg-primary text-white">
-                                  {count} шт
-                                </Badge>
-                              </div>
-                            ));
-                          })()}
-                          {(() => {
-                            const sizeCounts: Record<string, number> = {};
-                            employees.forEach(emp => {
-                              if (getConditionForMonth(emp.uniform.pants, selectedMonth) === 'needs_replacement') {
-                                const size = emp.uniform.pants.size;
-                                sizeCounts[size] = (sizeCounts[size] || 0) + 1;
-                              }
-                            });
-                            return Object.keys(sizeCounts).length === 0 ? (
-                              <div className="text-muted-foreground text-sm">Нет штанов для заказа</div>
-                            ) : null;
-                          })()}
-                        </div>
-                      </div>
-                    )}
-
-                    {!isRunners && (
-                      <div>
-                        <h4 className="font-semibold mb-4 flex items-center gap-2">
-                          <Icon name="Component" size={18} className={isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'} />
-                          Кителя
-                        </h4>
-                        <div className="space-y-2">
-                          {(() => {
-                            const sizeCounts: Record<string, number> = {};
-                            employees.forEach(emp => {
-                              if (getConditionForMonth(emp.uniform.jacket, selectedMonth) === 'needs_replacement') {
-                                const size = emp.uniform.jacket.size;
-                                if (size !== 'not_needed') {
-                                  sizeCounts[size] = (sizeCounts[size] || 0) + 1;
-                                }
-                              }
-                            });
-                            return Object.entries(sizeCounts).map(([size, count]) => (
-                              <div key={size} className="flex justify-between items-center p-3 rounded-lg bg-secondary/30">
-                                <span className="font-medium">Размер {size}</span>
-                                <Badge variant="secondary" className="bg-primary text-white">
-                                  {count} шт
-                                </Badge>
-                              </div>
-                            ));
-                          })()}
-                          {(() => {
-                            const sizeCounts: Record<string, number> = {};
-                            employees.forEach(emp => {
-                              if (getConditionForMonth(emp.uniform.jacket, selectedMonth) === 'needs_replacement') {
-                                const size = emp.uniform.jacket.size;
-                                sizeCounts[size] = (sizeCounts[size] || 0) + 1;
-                              }
-                            });
-                            return Object.keys(sizeCounts).length === 0 ? (
-                              <div className="text-muted-foreground text-sm">Нет кителей для заказа</div>
-                            ) : null;
-                          })()}
-                        </div>
-                      </div>
-                    )}
-
-                    <div>
-                      <h4 className="font-semibold mb-4 flex items-center gap-2">
-                        <Icon name="BadgeCheck" size={18} className={isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#1a237e]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'} />
-                        Бейджики
-                      </h4>
-                      <div className="space-y-2">
-                        {(() => {
-                          const badgeCount = employees.filter(emp => 
-                            getConditionForMonth(emp.uniform.badge, selectedMonth) === 'needs_replacement'
-                          ).length;
-                          return badgeCount > 0 ? (
-                            <div className="flex justify-between items-center p-3 rounded-lg bg-secondary/30">
-                              <span className="font-medium">Всего</span>
-                              <Badge variant="secondary" className="bg-primary text-white">
-                                {badgeCount} шт
-                              </Badge>
-                            </div>
-                          ) : (
-                            <div className="text-muted-foreground text-sm">Нет бейджиков для заказа</div>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </TabsContent>
         </Tabs>
       </div>
