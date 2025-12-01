@@ -1,0 +1,11 @@
+{
+  "tests": [
+    {
+      "name": "Get employees",
+      "method": "GET",
+      "path": "/?restaurant=port",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    }
+  ]
+}

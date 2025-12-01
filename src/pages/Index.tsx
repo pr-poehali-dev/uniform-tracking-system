@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { fetchEmployees, createEmployee, deleteEmployee, saveEmployees } from '@/utils/sync-storage';
+import { fetchEmployees, createEmployee, deleteEmployee, updateEmployee } from '@/utils/api';
 
 type UniformCondition = 'good' | 'bad';
 type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | '1' | '2' | '3' | 'needed' | 'not_needed';
@@ -142,7 +142,7 @@ const Index = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       loadEmployees(restaurant);
-    }, 3000);
+    }, 2000);
     return () => clearInterval(interval);
   }, [restaurant, loadEmployees]);
 
@@ -192,14 +192,21 @@ const Index = () => {
     
     setEmployees(updatedEmployees);
     
-    saveEmployees(restaurant, updatedEmployees);
+    const employee = updatedEmployees.find(e => e.id === empId);
+    if (employee) {
+      await updateEmployee(empId, employee.uniform);
+    }
     toast.success('Состояние обновлено');
   };
 
   const updateEmployeeNameHandler = async (empId: number, newName: string) => {
     const updatedEmployees = employees.map((emp) => (emp.id === empId ? { ...emp, name: newName } : emp));
     setEmployees(updatedEmployees);
-    saveEmployees(restaurant, updatedEmployees);
+    
+    const employee = updatedEmployees.find(e => e.id === empId);
+    if (employee) {
+      await updateEmployee(empId, employee.uniform);
+    }
   };
 
   const addEmployee = async () => {
@@ -233,43 +240,10 @@ const Index = () => {
     
     setEmployees(updatedEmployees);
     
-    saveEmployees(restaurant, updatedEmployees);
-  };
-
-  const exportData = () => {
-    const dataStr = JSON.stringify(employees, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `uniform-data-${restaurant}-${new Date().toISOString().split('T')[0]}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-    toast.success('Данные экспортированы');
-  };
-
-  const importData = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/json';
-    input.onchange = (e: any) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event: any) => {
-          try {
-            const importedData = JSON.parse(event.target.result);
-            setEmployees(importedData);
-            saveEmployees(restaurant, importedData);
-            toast.success('Данные импортированы успешно!');
-          } catch (error) {
-            toast.error('Ошибка при импорте данных');
-          }
-        };
-        reader.readAsText(file);
-      }
-    };
-    input.click();
+    const employee = updatedEmployees.find(e => e.id === empId);
+    if (employee) {
+      await updateEmployee(empId, employee.uniform);
+    }
   };
 
   const exportToExcel = () => {
@@ -484,17 +458,6 @@ const Index = () => {
               <div className={`text-2xl md:text-3xl font-bold ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#0f172a]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`}>{stats.needsReplacement}</div>
             </CardContent>
           </Card>
-        </div>
-
-        <div className="flex flex-wrap gap-3 mb-6 justify-center">
-          <Button onClick={exportData} variant="outline" className="flex items-center gap-2">
-            <Icon name="Download" size={18} />
-            Экспорт данных
-          </Button>
-          <Button onClick={importData} variant="outline" className="flex items-center gap-2">
-            <Icon name="Upload" size={18} />
-            Импорт данных
-          </Button>
         </div>
 
         <Tabs defaultValue="inventory" className="w-full">
