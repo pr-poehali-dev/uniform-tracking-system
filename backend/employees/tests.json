@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Get employees for restaurant",
+      "method": "GET",
+      "path": "/?restaurant=port",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Create new employee",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "restaurant": "dickens",
+        "name": "New Test Employee"
+      },
+      "expectedStatus": 201
+    }
+  ]
+}

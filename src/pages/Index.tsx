@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
+import { fetchEmployees, updateEmployee, createEmployee, deleteEmployee } from '@/utils/api';
 
 type UniformCondition = 'good' | 'bad' | 'needs_replacement';
 type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | '1' | '2' | '3' | 'needed' | 'not_needed';
@@ -102,26 +103,12 @@ const Index = () => {
   const [restaurant, setRestaurant] = useState<'port' | 'dickens' | 'bar' | 'hookah' | 'runners'>('port');
   const [showPortMenu, setShowPortMenu] = useState(false);
   const [showDickensMenu, setShowDickensMenu] = useState(false);
-  const [portEmployees, setPortEmployees] = useState<Employee[]>(() => {
-    const saved = localStorage.getItem('portEmployees');
-    return saved ? JSON.parse(saved) : initialEmployees;
-  });
-  const [dickensEmployees, setDickensEmployees] = useState<Employee[]>(() => {
-    const saved = localStorage.getItem('dickensEmployees');
-    return saved ? JSON.parse(saved) : initialEmployees;
-  });
-  const [barEmployees, setBarEmployees] = useState<Employee[]>(() => {
-    const saved = localStorage.getItem('barEmployees');
-    return saved ? JSON.parse(saved) : initialEmployees;
-  });
-  const [hookahEmployees, setHookahEmployees] = useState<Employee[]>(() => {
-    const saved = localStorage.getItem('hookahEmployees');
-    return saved ? JSON.parse(saved) : initialEmployees;
-  });
-  const [runnersEmployees, setRunnersEmployees] = useState<Employee[]>(() => {
-    const saved = localStorage.getItem('runnersEmployees');
-    return saved ? JSON.parse(saved) : initialEmployees;
-  });
+  const [portEmployees, setPortEmployees] = useState<Employee[]>([]);
+  const [dickensEmployees, setDickensEmployees] = useState<Employee[]>([]);
+  const [barEmployees, setBarEmployees] = useState<Employee[]>([]);
+  const [hookahEmployees, setHookahEmployees] = useState<Employee[]>([]);
+  const [runnersEmployees, setRunnersEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const employees = restaurant === 'port' ? portEmployees : restaurant === 'dickens' ? dickensEmployees : restaurant === 'bar' ? barEmployees : restaurant === 'hookah' ? hookahEmployees : runnersEmployees;
   const setEmployees = restaurant === 'port' ? setPortEmployees : restaurant === 'dickens' ? setDickensEmployees : restaurant === 'bar' ? setBarEmployees : restaurant === 'hookah' ? setHookahEmployees : setRunnersEmployees;
@@ -137,25 +124,33 @@ const Index = () => {
     badge: 'not_needed' as Size | 'not_needed',
   });
 
+  const loadEmployees = useCallback(async (restaurantName: string) => {
+    try {
+      setLoading(true);
+      const data = await fetchEmployees(restaurantName);
+      if (restaurantName === 'port') setPortEmployees(data);
+      else if (restaurantName === 'dickens') setDickensEmployees(data);
+      else if (restaurantName === 'bar') setBarEmployees(data);
+      else if (restaurantName === 'hookah') setHookahEmployees(data);
+      else if (restaurantName === 'runners') setRunnersEmployees(data);
+    } catch (error) {
+      console.error('Failed to load employees:', error);
+      toast.error('Не удалось загрузить данные');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    localStorage.setItem('portEmployees', JSON.stringify(portEmployees));
-  }, [portEmployees]);
-  
+    loadEmployees(restaurant);
+  }, [restaurant, loadEmployees]);
+
   useEffect(() => {
-    localStorage.setItem('dickensEmployees', JSON.stringify(dickensEmployees));
-  }, [dickensEmployees]);
-  
-  useEffect(() => {
-    localStorage.setItem('barEmployees', JSON.stringify(barEmployees));
-  }, [barEmployees]);
-  
-  useEffect(() => {
-    localStorage.setItem('hookahEmployees', JSON.stringify(hookahEmployees));
-  }, [hookahEmployees]);
-  
-  useEffect(() => {
-    localStorage.setItem('runnersEmployees', JSON.stringify(runnersEmployees));
-  }, [runnersEmployees]);
+    const interval = setInterval(() => {
+      loadEmployees(restaurant);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [restaurant, loadEmployees]);
 
   const getConditionForMonth = (item: UniformItem, month: string): UniformCondition | null => {
     const record = item.monthlyRecords.find(r => r.month === month);
@@ -175,77 +170,109 @@ const Index = () => {
     return hasCondition;
   });
 
-  const updateCondition = (empId: number, uniformType: keyof Employee['uniform'], condition: UniformCondition, issueDate?: string) => {
-    setEmployees((prev) =>
-      prev.map((emp) => {
-        if (emp.id === empId) {
-          const item = emp.uniform[uniformType];
-          const existingRecordIndex = item.monthlyRecords.findIndex(r => r.month === selectedMonth);
-          
-          let newRecords;
-          if (existingRecordIndex >= 0) {
-            newRecords = [...item.monthlyRecords];
-            newRecords[existingRecordIndex] = { month: selectedMonth, condition, issueDate: issueDate || newRecords[existingRecordIndex].issueDate };
-          } else {
-            newRecords = [...item.monthlyRecords, { month: selectedMonth, condition, issueDate }];
-          }
-
-          return {
-            ...emp,
-            uniform: {
-              ...emp.uniform,
-              [uniformType]: { ...item, monthlyRecords: newRecords },
-            },
-          };
+  const updateCondition = async (empId: number, uniformType: keyof Employee['uniform'], condition: UniformCondition, issueDate?: string) => {
+    const updatedEmployees = employees.map((emp) => {
+      if (emp.id === empId) {
+        const item = emp.uniform[uniformType];
+        const existingRecordIndex = item.monthlyRecords.findIndex(r => r.month === selectedMonth);
+        
+        let newRecords;
+        if (existingRecordIndex >= 0) {
+          newRecords = [...item.monthlyRecords];
+          newRecords[existingRecordIndex] = { month: selectedMonth, condition, issueDate: issueDate || newRecords[existingRecordIndex].issueDate };
+        } else {
+          newRecords = [...item.monthlyRecords, { month: selectedMonth, condition, issueDate }];
         }
-        return emp;
-      })
-    );
-    toast.success('Состояние обновлено');
+
+        return {
+          ...emp,
+          uniform: {
+            ...emp.uniform,
+            [uniformType]: { ...item, monthlyRecords: newRecords },
+          },
+        };
+      }
+      return emp;
+    });
+    
+    setEmployees(updatedEmployees);
+    
+    const employee = updatedEmployees.find(e => e.id === empId);
+    if (employee) {
+      try {
+        await updateEmployee(empId, employee.uniform);
+        toast.success('Состояние обновлено');
+      } catch (error) {
+        console.error('Failed to update employee:', error);
+        toast.error('Не удалось сохранить изменения');
+        await loadEmployees(restaurant);
+      }
+    }
   };
 
-  const updateEmployeeName = (empId: number, newName: string) => {
-    setEmployees((prev) =>
-      prev.map((emp) => (emp.id === empId ? { ...emp, name: newName } : emp))
-    );
+  const updateEmployeeName = async (empId: number, newName: string) => {
+    const updatedEmployees = employees.map((emp) => (emp.id === empId ? { ...emp, name: newName } : emp));
+    setEmployees(updatedEmployees);
+    
+    const employee = updatedEmployees.find(e => e.id === empId);
+    if (employee) {
+      try {
+        await updateEmployee(empId, employee.uniform);
+      } catch (error) {
+        console.error('Failed to update employee name:', error);
+        await loadEmployees(restaurant);
+      }
+    }
   };
 
-  const addEmployee = () => {
+  const addEmployee = async () => {
     const newId = Math.max(...employees.map(e => e.id), 0) + 1;
-    const newEmployee: Employee = {
-      id: newId,
-      name: `Сотрудник ${newId}`,
-      uniform: {
-        tshirt: { type: 'tshirt', size: 'M', monthlyRecords: [] },
-        pants: { type: 'pants', size: '2', monthlyRecords: [] },
-        jacket: { type: 'jacket', size: '2', monthlyRecords: [] },
-        badge: { type: 'badge', size: 'needed', monthlyRecords: [] },
-      },
-    };
-    setEmployees([...employees, newEmployee]);
-    toast.success('Сотрудник добавлен');
+    try {
+      await createEmployee(restaurant, `Сотрудник ${newId}`);
+      await loadEmployees(restaurant);
+      toast.success('Сотрудник добавлен');
+    } catch (error) {
+      console.error('Failed to add employee:', error);
+      toast.error('Не удалось добавить сотрудника');
+    }
   };
 
-  const deleteEmployee = (empId: number) => {
-    setEmployees((prev) => prev.filter(emp => emp.id !== empId));
-    toast.success('Сотрудник удален');
+  const deleteEmployeeHandler = async (empId: number) => {
+    try {
+      await deleteEmployee(empId);
+      await loadEmployees(restaurant);
+      toast.success('Сотрудник удален');
+    } catch (error) {
+      console.error('Failed to delete employee:', error);
+      toast.error('Не удалось удалить сотрудника');
+    }
   };
 
-  const updateSize = (empId: number, uniformType: keyof Employee['uniform'], size: Size) => {
-    setEmployees((prev) =>
-      prev.map((emp) => {
-        if (emp.id === empId) {
-          return {
-            ...emp,
-            uniform: {
-              ...emp.uniform,
-              [uniformType]: { ...emp.uniform[uniformType], size },
-            },
-          };
-        }
-        return emp;
-      })
-    );
+  const updateSize = async (empId: number, uniformType: keyof Employee['uniform'], size: Size) => {
+    const updatedEmployees = employees.map((emp) => {
+      if (emp.id === empId) {
+        return {
+          ...emp,
+          uniform: {
+            ...emp.uniform,
+            [uniformType]: { ...emp.uniform[uniformType], size },
+          },
+        };
+      }
+      return emp;
+    });
+    
+    setEmployees(updatedEmployees);
+    
+    const employee = updatedEmployees.find(e => e.id === empId);
+    if (employee) {
+      try {
+        await updateEmployee(empId, employee.uniform);
+      } catch (error) {
+        console.error('Failed to update size:', error);
+        await loadEmployees(restaurant);
+      }
+    }
   };
 
   const exportToExcel = () => {
@@ -464,9 +491,11 @@ const Index = () => {
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0 mb-3 md:mb-4">
                   <div>
                     <CardTitle className="text-base md:text-lg">Учёт состояния формы</CardTitle>
-                    <CardDescription className="text-xs md:text-sm">Отслеживайте состояние формы каждого сотрудника</CardDescription>
+                    <CardDescription className="text-xs md:text-sm">
+                      {loading ? 'Загрузка данных...' : 'Отслеживайте состояние формы каждого сотрудника'}
+                    </CardDescription>
                   </div>
-                  <Button onClick={addEmployee} className={`flex items-center gap-1.5 md:gap-2 text-xs md:text-sm w-full sm:w-auto ${isDickens ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : isHookah ? 'bg-[#0f172a] hover:bg-[#020617]' : isRunners ? 'bg-[#4a3520] hover:bg-[#2d1f12]' : isBar ? 'bg-[#0d5c3a] hover:bg-[#094d2e]' : ''}`} size="sm">
+                  <Button onClick={addEmployee} className={`flex items-center gap-1.5 md:gap-2 text-xs md:text-sm w-full sm:w-auto ${isDickens ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : isHookah ? 'bg-[#0f172a] hover:bg-[#020617]' : isRunners ? 'bg-[#4a3520] hover:bg-[#2d1f12]' : isBar ? 'bg-[#0d5c3a] hover:bg-[#094d2e]' : ''}`} size="sm" disabled={loading}>
                     <Icon name="UserPlus" size={16} className="md:w-[18px] md:h-[18px]" />
                     <span className="hidden sm:inline">Добавить сотрудника</span>
                     <span className="sm:hidden">Добавить</span>
@@ -592,7 +621,7 @@ const Index = () => {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => deleteEmployee(emp.id)}
+                              onClick={() => deleteEmployeeHandler(emp.id)}
                               className="text-destructive hover:text-destructive h-8 w-8 p-0"
                             >
                               <Icon name="Trash2" size={14} className="md:w-4 md:h-4" />
