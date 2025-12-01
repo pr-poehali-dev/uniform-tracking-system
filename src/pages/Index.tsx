@@ -9,9 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { fetchEmployees, createEmployee, deleteEmployee, saveEmployees } from '@/utils/storage';
+import { fetchEmployees, createEmployee, deleteEmployee, saveEmployees } from '@/utils/sync-storage';
 
-type UniformCondition = 'good' | 'bad' | 'needs_replacement';
+type UniformCondition = 'good' | 'bad';
 type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | '1' | '2' | '3' | 'needed' | 'not_needed';
 
 interface MonthlyRecord {
@@ -139,6 +139,12 @@ const Index = () => {
     loadEmployees(restaurant);
   }, [restaurant, loadEmployees]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadEmployees(restaurant);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [restaurant, loadEmployees]);
 
 
   const getConditionForMonth = (item: UniformItem, month: string): UniformCondition | null => {
@@ -500,7 +506,6 @@ const Index = () => {
                       <SelectItem value="all">Все состояния</SelectItem>
                       <SelectItem value="good">Хорошее</SelectItem>
                       <SelectItem value="bad">Плохое</SelectItem>
-                      <SelectItem value="needs_replacement">Требуется</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -556,13 +561,7 @@ const Index = () => {
                                           <span className="sm:hidden">Плох.</span>
                                         </span>
                                       )}
-                                      {condition === 'needs_replacement' && (
-                                        <span className="flex items-center gap-1 md:gap-2">
-                                          <Icon name="Package" size={14} className="text-[#FF8C00] md:w-4 md:h-4" />
-                                          <span className="hidden sm:inline">Требуется</span>
-                                          <span className="sm:hidden">Треб.</span>
-                                        </span>
-                                      )}
+
                                     </SelectValue>
                                   </SelectTrigger>
                                   <SelectContent>
@@ -576,12 +575,6 @@ const Index = () => {
                                       <span className="flex items-center gap-2">
                                         <Icon name="X" size={16} className="text-[#DC143C]" />
                                         Плохое
-                                      </span>
-                                    </SelectItem>
-                                    <SelectItem value="needs_replacement">
-                                      <span className="flex items-center gap-2">
-                                        <Icon name="Package" size={16} className="text-[#FF8C00]" />
-                                        Требуется
                                       </span>
                                     </SelectItem>
                                   </SelectContent>
