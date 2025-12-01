@@ -175,43 +175,50 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         elif method == 'PUT':
             body_data = json.loads(event.get('body', '{}'))
             employee_id = body_data.get('employeeId')
+            employee_name = body_data.get('name')
             uniform = body_data.get('uniform')
             
-            if not employee_id or not uniform:
+            if not employee_id:
                 return {
                     'statusCode': 400,
                     'headers': headers,
-                    'body': json.dumps({'error': 'Employee ID and uniform data are required'})
+                    'body': json.dumps({'error': 'Employee ID is required'})
                 }
             
-            for item_type, item_data in uniform.items():
-                size = item_data.get('size')
-                monthly_records = item_data.get('monthlyRecords', [])
-                
+            if employee_name:
                 cur.execute("""
-                    INSERT INTO uniform_items (employee_id, item_type, size)
-                    VALUES (%s, %s, %s)
-                    ON CONFLICT (employee_id, item_type)
-                    DO UPDATE SET size = EXCLUDED.size
-                    RETURNING id
-                """, (employee_id, item_type, size))
-                
-                uniform_item_id = cur.fetchone()['id']
-                
-                for record in monthly_records:
-                    month = record.get('month')
-                    condition = record.get('condition')
-                    issue_date = record.get('issueDate')
+                    UPDATE employees SET name = %s WHERE id = %s
+                """, (employee_name, employee_id))
+            
+            if uniform:
+                for item_type, item_data in uniform.items():
+                    size = item_data.get('size')
+                    monthly_records = item_data.get('monthlyRecords', [])
                     
                     cur.execute("""
-                        INSERT INTO monthly_records (uniform_item_id, month, condition, issue_date)
-                        VALUES (%s, %s, %s, %s)
-                        ON CONFLICT (uniform_item_id, month)
-                        DO UPDATE SET 
-                            condition = EXCLUDED.condition,
-                            issue_date = EXCLUDED.issue_date,
-                            updated_at = CURRENT_TIMESTAMP
-                    """, (uniform_item_id, month, condition, issue_date))
+                        INSERT INTO uniform_items (employee_id, item_type, size)
+                        VALUES (%s, %s, %s)
+                        ON CONFLICT (employee_id, item_type)
+                        DO UPDATE SET size = EXCLUDED.size
+                        RETURNING id
+                    """, (employee_id, item_type, size))
+                    
+                    uniform_item_id = cur.fetchone()['id']
+                    
+                    for record in monthly_records:
+                        month = record.get('month')
+                        condition = record.get('condition')
+                        issue_date = record.get('issueDate')
+                        
+                        cur.execute("""
+                            INSERT INTO monthly_records (uniform_item_id, month, condition, issue_date)
+                            VALUES (%s, %s, %s, %s)
+                            ON CONFLICT (uniform_item_id, month)
+                            DO UPDATE SET 
+                                condition = EXCLUDED.condition,
+                                issue_date = EXCLUDED.issue_date,
+                                updated_at = CURRENT_TIMESTAMP
+                        """, (uniform_item_id, month, condition, issue_date))
             
             conn.commit()
             cur.close()

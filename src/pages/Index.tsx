@@ -218,7 +218,7 @@ const Index = () => {
     const employee = employees.find(e => e.id === empId);
     if (employee) {
       try {
-        await updateEmployee(empId, employee.uniform);
+        await updateEmployee(empId, employee.uniform, employee.name);
         toast.success('Имя сохранено');
       } catch (error) {
         console.error('Failed to update employee name:', error);

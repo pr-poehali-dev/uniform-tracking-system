@@ -44,13 +44,13 @@ export const createEmployee = async (restaurant: string, name: string): Promise<
   return response.json();
 };
 
-export const updateEmployee = async (employeeId: number, uniform: Employee['uniform']): Promise<void> => {
+export const updateEmployee = async (employeeId: number, uniform: Employee['uniform'], name?: string): Promise<void> => {
   const response = await fetch(API_URL, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ employeeId, uniform }),
+    body: JSON.stringify({ employeeId, uniform, name }),
   });
   if (!response.ok) {
     throw new Error('Failed to update employee');
