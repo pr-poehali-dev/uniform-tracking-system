@@ -1,0 +1,30 @@
+{
+  "tests": [
+    {
+      "name": "Get employees",
+      "method": "GET",
+      "path": "/?action=get_employees&restaurant=port",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "employees": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create employee",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "create_employee",
+        "restaurant": "port",
+        "name": "Test Employee"
+      },
+      "expectedStatus": 201,
+      "expectedBody": {
+        "id": "number",
+        "name": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

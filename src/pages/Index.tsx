@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { fetchEmployees, updateEmployee, createEmployee, deleteEmployee } from '@/utils/api';
+import { fetchEmployees, updateEmployee, createEmployee, deleteEmployee } from '@/utils/db';
 
 type UniformCondition = 'good' | 'bad' | 'needs_replacement';
 type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | '1' | '2' | '3' | 'needed' | 'not_needed';
@@ -125,20 +125,14 @@ const Index = () => {
   });
 
   const loadEmployees = useCallback(async (restaurantName: string) => {
-    try {
-      setLoading(true);
-      const data = await fetchEmployees(restaurantName);
-      if (restaurantName === 'port') setPortEmployees(data);
-      else if (restaurantName === 'dickens') setDickensEmployees(data);
-      else if (restaurantName === 'bar') setBarEmployees(data);
-      else if (restaurantName === 'hookah') setHookahEmployees(data);
-      else if (restaurantName === 'runners') setRunnersEmployees(data);
-    } catch (error) {
-      console.error('Failed to load employees:', error);
-      toast.error('Не удалось загрузить данные');
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    const data = await fetchEmployees(restaurantName);
+    if (restaurantName === 'port') setPortEmployees(data);
+    else if (restaurantName === 'dickens') setDickensEmployees(data);
+    else if (restaurantName === 'bar') setBarEmployees(data);
+    else if (restaurantName === 'hookah') setHookahEmployees(data);
+    else if (restaurantName === 'runners') setRunnersEmployees(data);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -199,11 +193,10 @@ const Index = () => {
     
     const employee = updatedEmployees.find(e => e.id === empId);
     if (employee) {
-      try {
-        await updateEmployee(empId, employee.uniform);
+      const success = await updateEmployee(empId, employee.uniform);
+      if (success) {
         toast.success('Состояние обновлено');
-      } catch (error) {
-        console.error('Failed to update employee:', error);
+      } else {
         toast.error('Не удалось сохранить изменения');
         await loadEmployees(restaurant);
       }
@@ -216,34 +209,27 @@ const Index = () => {
     
     const employee = updatedEmployees.find(e => e.id === empId);
     if (employee) {
-      try {
-        await updateEmployee(empId, employee.uniform);
-      } catch (error) {
-        console.error('Failed to update employee name:', error);
-        await loadEmployees(restaurant);
-      }
+      await updateEmployee(empId, employee.uniform);
     }
   };
 
   const addEmployee = async () => {
     const newId = Math.max(...employees.map(e => e.id), 0) + 1;
-    try {
-      await createEmployee(restaurant, `Сотрудник ${newId}`);
+    const result = await createEmployee(restaurant, `Сотрудник ${newId}`);
+    if (result) {
       await loadEmployees(restaurant);
       toast.success('Сотрудник добавлен');
-    } catch (error) {
-      console.error('Failed to add employee:', error);
+    } else {
       toast.error('Не удалось добавить сотрудника');
     }
   };
 
   const deleteEmployeeHandler = async (empId: number) => {
-    try {
-      await deleteEmployee(empId);
+    const success = await deleteEmployee(empId);
+    if (success) {
       await loadEmployees(restaurant);
       toast.success('Сотрудник удален');
-    } catch (error) {
-      console.error('Failed to delete employee:', error);
+    } else {
       toast.error('Не удалось удалить сотрудника');
     }
   };
@@ -266,12 +252,7 @@ const Index = () => {
     
     const employee = updatedEmployees.find(e => e.id === empId);
     if (employee) {
-      try {
-        await updateEmployee(empId, employee.uniform);
-      } catch (error) {
-        console.error('Failed to update size:', error);
-        await loadEmployees(restaurant);
-      }
+      await updateEmployee(empId, employee.uniform);
     }
   };
 
