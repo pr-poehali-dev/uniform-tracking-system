@@ -57,13 +57,13 @@ export const updateEmployee = async (employeeId: number, uniform: Employee['unif
   }
 };
 
-export const deleteEmployee = async (employeeId: number): Promise<void> => {
+export const deleteEmployee = async (employeeId: number, restaurant: string): Promise<void> => {
   const response = await fetch(API_URL, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ employeeId }),
+    body: JSON.stringify({ employeeId, restaurant }),
   });
   if (!response.ok) {
     throw new Error('Failed to delete employee');

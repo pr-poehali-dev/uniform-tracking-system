@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import { fetchEmployees, updateEmployee, createEmployee, deleteEmployee } from '@/utils/api';
 
-type UniformCondition = 'good' | 'bad' | 'needs_replacement';
+type UniformCondition = 'good' | 'bad';
 type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | '1' | '2' | '3' | 'needed' | 'not_needed';
 
 interface MonthlyRecord {
@@ -83,13 +83,11 @@ const initialEmployees: Employee[] = [
 const conditionColors = {
   good: 'bg-[#2E8B57]',
   bad: 'bg-[#DC143C]',
-  needs_replacement: 'bg-[#FF8C00]',
 };
 
 const conditionLabels = {
   good: 'Хорошее',
   bad: 'Плохое',
-  needs_replacement: 'Требуется',
 };
 
 const uniformLabels = {
@@ -242,7 +240,7 @@ const Index = () => {
 
   const deleteEmployeeHandler = async (empId: number) => {
     try {
-      await deleteEmployee(empId);
+      await deleteEmployee(empId, restaurant);
       await loadEmployees(restaurant);
       toast.success('Сотрудник удален');
     } catch (error) {
@@ -308,9 +306,7 @@ const Index = () => {
           const condition = record?.condition;
           row[uniformLabels[type]] = condition ? conditionLabels[condition] : 'Не заполнено';
           row[`${uniformLabels[type]} - Размер`] = sizeLabels[item.size] || item.size;
-          if (condition === 'needs_replacement' && record?.issueDate) {
-            row[`${uniformLabels[type]} - Дата выдачи`] = record.issueDate;
-          }
+
         });
 
         data.push(row);
@@ -334,15 +330,6 @@ const Index = () => {
 
   const stats = {
     total: employees.length,
-    needsReplacement: employees.filter((emp) =>
-      Object.values(emp.uniform).some((item) => getConditionForMonth(item, selectedMonth) === 'needs_replacement')
-    ).length,
-    byType: {
-      tshirt: employees.filter((emp) => getConditionForMonth(emp.uniform.tshirt, selectedMonth) === 'needs_replacement').length,
-      pants: employees.filter((emp) => getConditionForMonth(emp.uniform.pants, selectedMonth) === 'needs_replacement').length,
-      jacket: employees.filter((emp) => getConditionForMonth(emp.uniform.jacket, selectedMonth) === 'needs_replacement').length,
-      badge: employees.filter((emp) => getConditionForMonth(emp.uniform.badge, selectedMonth) === 'needs_replacement').length,
-    },
   };
 
   const isDickens = restaurant === 'dickens';
@@ -461,21 +448,11 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className={`border-2 hover:shadow-lg transition-all ${isDickens ? 'bg-white border-[#1e3a5f]/30' : isHookah ? 'bg-white border-[#0f172a]/30' : isRunners ? 'bg-white border-[#4a3520]/30' : isBar ? 'bg-white border-[#0d5c3a]/30' : 'border-[#FF8C00]/20'}`}>
-            <CardHeader className="pb-2 md:pb-3 p-4 md:p-6">
-              <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-1.5 md:gap-2">
-                <Icon name="AlertCircle" size={16} className={`md:w-[18px] md:h-[18px] ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#0f172a]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`} />
-                <span className="truncate">Нужна замена ({selectedMonth})</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 md:p-6 pt-0">
-              <div className={`text-2xl md:text-3xl font-bold ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#0f172a]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`}>{stats.needsReplacement}</div>
-            </CardContent>
-          </Card>
+
         </div>
 
         <Tabs defaultValue="inventory" className="w-full">
-          <TabsList className={`grid w-full grid-cols-2 md:grid-cols-4 mb-4 md:mb-6 h-auto ${isDickens || isHookah || isRunners ? 'bg-white/10' : isBar ? 'bg-white/20' : ''}`}>
+          <TabsList className={`grid w-full grid-cols-2 mb-4 md:mb-6 h-auto ${isDickens || isHookah || isRunners ? 'bg-white/10' : isBar ? 'bg-white/20' : ''}`}>
             <TabsTrigger value="inventory" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm py-2 md:py-2.5">
               <Icon name="ClipboardList" size={16} className="md:w-[18px] md:h-[18px]" />
               <span className="hidden sm:inline">Учёт формы</span>
@@ -485,16 +462,6 @@ const Index = () => {
               <Icon name="ShoppingBag" size={16} className="md:w-[18px] md:h-[18px]" />
               <span className="hidden sm:inline">Заказать форму</span>
               <span className="sm:hidden">Заказ</span>
-            </TabsTrigger>
-            <TabsTrigger value="issue" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm py-2 md:py-2.5">
-              <Icon name="Calendar" size={16} className="md:w-[18px] md:h-[18px]" />
-              <span className="hidden sm:inline">Выдача формы</span>
-              <span className="sm:hidden">Выдача</span>
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm py-2 md:py-2.5">
-              <Icon name="BarChart3" size={16} className="md:w-[18px] md:h-[18px]" />
-              <span className="hidden sm:inline">Статистика</span>
-              <span className="sm:hidden">Статистика</span>
             </TabsTrigger>
           </TabsList>
 
@@ -548,7 +515,7 @@ const Index = () => {
                       <SelectItem value="all">Все состояния</SelectItem>
                       <SelectItem value="good">Хорошее</SelectItem>
                       <SelectItem value="bad">Плохое</SelectItem>
-                      <SelectItem value="needs_replacement">Требуется</SelectItem>
+
                     </SelectContent>
                   </Select>
                 </div>
@@ -569,7 +536,7 @@ const Index = () => {
                     <TableBody>
                       {filteredEmployees.map((emp) => (
                         <TableRow key={emp.id} className="hover:bg-secondary/50 transition-colors">
-                          <TableCell className="p-2 md:p-4">
+                          <TableCell className="p-2 md:p-4 min-w-0">
                             <Input
                               value={emp.name}
                               onChange={(e) => updateEmployeeNameLocal(emp.id, e.target.value)}
@@ -579,7 +546,7 @@ const Index = () => {
                                   e.currentTarget.blur();
                                 }
                               }}
-                              className="font-medium border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary text-xs md:text-sm h-8 md:h-9"
+                              className="font-medium border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary text-xs md:text-sm h-8 md:h-9 w-full min-w-0"
                             />
                           </TableCell>
                           {(['tshirt', 'pants', 'jacket', 'badge'] as const)
@@ -610,13 +577,7 @@ const Index = () => {
                                           <span className="sm:hidden">Плох.</span>
                                         </span>
                                       )}
-                                      {condition === 'needs_replacement' && (
-                                        <span className="flex items-center gap-1 md:gap-2">
-                                          <Icon name="Package" size={14} className="text-[#FF8C00] md:w-4 md:h-4" />
-                                          <span className="hidden sm:inline">Требуется</span>
-                                          <span className="sm:hidden">Треб.</span>
-                                        </span>
-                                      )}
+
                                     </SelectValue>
                                   </SelectTrigger>
                                   <SelectContent>
@@ -632,12 +593,7 @@ const Index = () => {
                                         Плохое
                                       </span>
                                     </SelectItem>
-                                    <SelectItem value="needs_replacement">
-                                      <span className="flex items-center gap-2">
-                                        <Icon name="Package" size={16} className="text-[#FF8C00]" />
-                                        Требуется
-                                      </span>
-                                    </SelectItem>
+
                                   </SelectContent>
                                 </Select>
                               </TableCell>
@@ -787,8 +743,13 @@ const Index = () => {
               </CardContent>
             </Card>
           </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
 
-          <TabsContent value="issue" className="animate-fade-in">
+export default Index;
             <Card className={isDickens || isHookah || isRunners ? 'bg-white' : isBar ? 'bg-white' : ''}>
               <CardHeader className="p-4 md:p-6">
                 <CardTitle className="text-base md:text-lg">Выдача новой формы</CardTitle>
@@ -966,7 +927,7 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {(['good', 'bad', 'needs_replacement'] as const).map((condition) => {
+                    {(['good', 'bad'] as const).map((condition) => {
                       const count = employees.reduce(
                         (acc, emp) =>
                           acc +

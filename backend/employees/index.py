@@ -241,18 +241,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'Employee ID is required'})
                 }
             
-            cur.execute("""
-                WITH deleted_records AS (
-                    SELECT mr.id FROM monthly_records mr
-                    JOIN uniform_items ui ON ui.id = mr.uniform_item_id
-                    WHERE ui.employee_id = %s
-                ),
-                deleted_items AS (
-                    SELECT id FROM uniform_items WHERE employee_id = %s
-                )
-                SELECT 1
-            """, (employee_id, employee_id))
-            
             cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
             employee = cur.fetchone()
             
@@ -262,6 +250,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'headers': headers,
                     'body': json.dumps({'error': 'Employee not found'})
                 }
+            
+            cur.execute("""
+                DELETE FROM monthly_records 
+                WHERE uniform_item_id IN (
+                    SELECT id FROM uniform_items WHERE employee_id = %s
+                )
+            """, (employee_id,))
+            
+            cur.execute("DELETE FROM uniform_items WHERE employee_id = %s", (employee_id,))
+            
+            cur.execute("DELETE FROM employees WHERE id = %s", (employee_id,))
             
             conn.commit()
             cur.close()
