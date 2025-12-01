@@ -175,50 +175,43 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         elif method == 'PUT':
             body_data = json.loads(event.get('body', '{}'))
             employee_id = body_data.get('employeeId')
-            employee_name = body_data.get('name')
             uniform = body_data.get('uniform')
             
-            if not employee_id:
+            if not employee_id or not uniform:
                 return {
                     'statusCode': 400,
                     'headers': headers,
-                    'body': json.dumps({'error': 'Employee ID is required'})
+                    'body': json.dumps({'error': 'Employee ID and uniform data are required'})
                 }
             
-            if employee_name:
+            for item_type, item_data in uniform.items():
+                size = item_data.get('size')
+                monthly_records = item_data.get('monthlyRecords', [])
+                
                 cur.execute("""
-                    UPDATE employees SET name = %s WHERE id = %s
-                """, (employee_name, employee_id))
-            
-            if uniform:
-                for item_type, item_data in uniform.items():
-                    size = item_data.get('size')
-                    monthly_records = item_data.get('monthlyRecords', [])
+                    INSERT INTO uniform_items (employee_id, item_type, size)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (employee_id, item_type)
+                    DO UPDATE SET size = EXCLUDED.size
+                    RETURNING id
+                """, (employee_id, item_type, size))
+                
+                uniform_item_id = cur.fetchone()['id']
+                
+                for record in monthly_records:
+                    month = record.get('month')
+                    condition = record.get('condition')
+                    issue_date = record.get('issueDate')
                     
                     cur.execute("""
-                        INSERT INTO uniform_items (employee_id, item_type, size)
-                        VALUES (%s, %s, %s)
-                        ON CONFLICT (employee_id, item_type)
-                        DO UPDATE SET size = EXCLUDED.size
-                        RETURNING id
-                    """, (employee_id, item_type, size))
-                    
-                    uniform_item_id = cur.fetchone()['id']
-                    
-                    for record in monthly_records:
-                        month = record.get('month')
-                        condition = record.get('condition')
-                        issue_date = record.get('issueDate')
-                        
-                        cur.execute("""
-                            INSERT INTO monthly_records (uniform_item_id, month, condition, issue_date)
-                            VALUES (%s, %s, %s, %s)
-                            ON CONFLICT (uniform_item_id, month)
-                            DO UPDATE SET 
-                                condition = EXCLUDED.condition,
-                                issue_date = EXCLUDED.issue_date,
-                                updated_at = CURRENT_TIMESTAMP
-                        """, (uniform_item_id, month, condition, issue_date))
+                        INSERT INTO monthly_records (uniform_item_id, month, condition, issue_date)
+                        VALUES (%s, %s, %s, %s)
+                        ON CONFLICT (uniform_item_id, month)
+                        DO UPDATE SET 
+                            condition = EXCLUDED.condition,
+                            issue_date = EXCLUDED.issue_date,
+                            updated_at = CURRENT_TIMESTAMP
+                    """, (uniform_item_id, month, condition, issue_date))
             
             conn.commit()
             cur.close()
@@ -231,8 +224,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             }
         
         elif method == 'DELETE':
-            body_data = json.loads(event.get('body', '{}')) if event.get('body') else {}
-            employee_id = body_data.get('employeeId') or (event.get('queryStringParameters') or {}).get('id')
+            params = event.get('queryStringParameters') or {}
+            employee_id = params.get('id')
             
             if not employee_id:
                 return {
@@ -241,26 +234,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'Employee ID is required'})
                 }
             
-            cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
-            employee = cur.fetchone()
-            
-            if not employee:
-                return {
-                    'statusCode': 404,
-                    'headers': headers,
-                    'body': json.dumps({'error': 'Employee not found'})
-                }
-            
-            cur.execute("""
-                DELETE FROM monthly_records 
-                WHERE uniform_item_id IN (
-                    SELECT id FROM uniform_items WHERE employee_id = %s
-                )
-            """, (employee_id,))
-            
-            cur.execute("DELETE FROM uniform_items WHERE employee_id = %s", (employee_id,))
-            
-            cur.execute("DELETE FROM employees WHERE id = %s", (employee_id,))
+            cur.execute("UPDATE employees SET name = name WHERE id = %s", (employee_id,))
             
             conn.commit()
             cur.close()
@@ -269,7 +243,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 200,
                 'headers': headers,
-                'body': json.dumps({'message': 'Employee deleted successfully', 'id': employee_id})
+                'body': json.dumps({'message': 'Employee deleted successfully'})
             }
         
         else:
