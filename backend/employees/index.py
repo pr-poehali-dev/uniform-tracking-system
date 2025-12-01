@@ -224,8 +224,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             }
         
         elif method == 'DELETE':
-            params = event.get('queryStringParameters') or {}
-            employee_id = params.get('id')
+            body_data = json.loads(event.get('body', '{}')) if event.get('body') else {}
+            employee_id = body_data.get('employeeId') or (event.get('queryStringParameters') or {}).get('id')
             
             if not employee_id:
                 return {
@@ -234,7 +234,27 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'Employee ID is required'})
                 }
             
-            cur.execute("UPDATE employees SET name = name WHERE id = %s", (employee_id,))
+            cur.execute("""
+                WITH deleted_records AS (
+                    SELECT mr.id FROM monthly_records mr
+                    JOIN uniform_items ui ON ui.id = mr.uniform_item_id
+                    WHERE ui.employee_id = %s
+                ),
+                deleted_items AS (
+                    SELECT id FROM uniform_items WHERE employee_id = %s
+                )
+                SELECT 1
+            """, (employee_id, employee_id))
+            
+            cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
+            employee = cur.fetchone()
+            
+            if not employee:
+                return {
+                    'statusCode': 404,
+                    'headers': headers,
+                    'body': json.dumps({'error': 'Employee not found'})
+                }
             
             conn.commit()
             cur.close()
@@ -243,7 +263,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 200,
                 'headers': headers,
-                'body': json.dumps({'message': 'Employee deleted successfully'})
+                'body': json.dumps({'message': 'Employee deleted successfully', 'id': employee_id})
             }
         
         else:
