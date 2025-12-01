@@ -383,14 +383,14 @@ const Index = () => {
               className={`${restaurant === 'hookah' ? 'bg-[#0f172a] hover:bg-[#020617]' : 'bg-white hover:bg-gray-100 text-gray-700'} flex items-center gap-2`}
             >
               <Icon name="Cloudy" size={18} />
-              <span className="hidden sm:inline">Кальянная</span>
+              <span className="hidden sm:inline">Кальянные мастера</span>
             </Button>
             <Button 
               onClick={() => setRestaurant('runners')} 
               className={`${restaurant === 'runners' ? 'bg-[#4a3520] hover:bg-[#2d1f12]' : 'bg-white hover:bg-gray-100 text-gray-700'} flex items-center gap-2`}
             >
               <Icon name="Users" size={18} />
-              <span className="hidden sm:inline">Раннерс</span>
+              <span className="hidden sm:inline">Раннеры</span>
             </Button>
           </div>
         </div>
@@ -410,7 +410,7 @@ const Index = () => {
         </div>
 
         <Tabs defaultValue="inventory" className="w-full">
-          <TabsList className={`grid w-full grid-cols-2 mb-4 md:mb-6 h-auto ${isDickens || isHookah || isRunners ? 'bg-white/10' : isBar ? 'bg-white/20' : ''}`}>
+          <TabsList className={`grid w-full grid-cols-3 mb-4 md:mb-6 h-auto ${isDickens || isHookah || isRunners ? 'bg-white/10' : isBar ? 'bg-white/20' : ''}`}>
             <TabsTrigger value="inventory" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm py-2 md:py-2.5">
               <Icon name="ClipboardList" size={16} className="md:w-[18px] md:h-[18px]" />
               <span className="hidden sm:inline">Учёт формы</span>
@@ -420,6 +420,11 @@ const Index = () => {
               <Icon name="ShoppingBag" size={16} className="md:w-[18px] md:h-[18px]" />
               <span className="hidden sm:inline">Заказать форму</span>
               <span className="sm:hidden">Заказ</span>
+            </TabsTrigger>
+            <TabsTrigger value="stats" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm py-2 md:py-2.5">
+              <Icon name="BarChart3" size={16} className="md:w-[18px] md:h-[18px]" />
+              <span className="hidden sm:inline">Статистика</span>
+              <span className="sm:hidden">Стат.</span>
             </TabsTrigger>
           </TabsList>
 
@@ -697,6 +702,74 @@ const Index = () => {
                     </div>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="stats" className="animate-fade-in">
+            <Card className={isDickens || isHookah || isRunners ? 'bg-white' : isBar ? 'bg-white' : ''}>
+              <CardHeader className="p-4 md:p-6">
+                <CardTitle className="text-base md:text-lg">Статистика заказов</CardTitle>
+                <CardDescription className="text-xs md:text-sm">Сводка по необходимым заказам формы на {selectedMonth}</CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {(['tshirt', 'pants', 'jacket', 'badge'] as const)
+                    .filter(type => !isRunners || (type !== 'pants' && type !== 'jacket'))
+                    .map((type) => {
+                      const needsReplacementCount = employees.filter(emp => {
+                        const condition = getConditionForMonth(emp.uniform[type], selectedMonth);
+                        return condition === 'bad';
+                      }).length;
+                      
+                      const sizeBreakdown: Record<string, number> = {};
+                      employees.forEach(emp => {
+                        const condition = getConditionForMonth(emp.uniform[type], selectedMonth);
+                        if (condition === 'bad') {
+                          const size = emp.uniform[type].size;
+                          sizeBreakdown[size] = (sizeBreakdown[size] || 0) + 1;
+                        }
+                      });
+
+                      return (
+                        <Card key={type} className={`${isDickens ? 'border-[#1e3a5f]/20' : isHookah ? 'border-[#0f172a]/20' : isRunners ? 'border-[#4a3520]/20' : isBar ? 'border-[#0d5c3a]/20' : 'border-primary/20'}`}>
+                          <CardHeader className="p-3 md:p-4">
+                            <CardTitle className="text-sm md:text-base flex items-center gap-2">
+                              <Icon 
+                                name={type === 'tshirt' ? 'Shirt' : type === 'pants' ? 'User' : type === 'jacket' ? 'Component' : 'BadgeCheck'} 
+                                size={18} 
+                                className={isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#0f172a]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-primary'}
+                              />
+                              {uniformLabels[type]}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-3 md:p-4 pt-0">
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs md:text-sm text-muted-foreground">К заказу:</span>
+                                <Badge className={`${isDickens ? 'bg-[#1e3a5f]' : isHookah ? 'bg-[#0f172a]' : isRunners ? 'bg-[#4a3520]' : isBar ? 'bg-[#0d5c3a]' : 'bg-primary'} text-white`}>
+                                  {needsReplacementCount} шт
+                                </Badge>
+                              </div>
+                              {Object.keys(sizeBreakdown).length > 0 && (
+                                <div className="mt-3 pt-3 border-t">
+                                  <div className="text-xs font-medium mb-2">По размерам:</div>
+                                  <div className="space-y-1">
+                                    {Object.entries(sizeBreakdown).map(([size, count]) => (
+                                      <div key={size} className="flex justify-between text-xs">
+                                        <span className="text-muted-foreground">{sizeLabels[size as Size] || size}:</span>
+                                        <span className="font-medium">{count} шт</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
