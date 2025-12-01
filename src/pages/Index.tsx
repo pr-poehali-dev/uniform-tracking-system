@@ -210,16 +210,19 @@ const Index = () => {
     }
   };
 
-  const updateEmployeeName = async (empId: number, newName: string) => {
-    const updatedEmployees = employees.map((emp) => (emp.id === empId ? { ...emp, name: newName } : emp));
-    setEmployees(updatedEmployees);
-    
-    const employee = updatedEmployees.find(e => e.id === empId);
+  const updateEmployeeNameLocal = (empId: number, newName: string) => {
+    setEmployees((prev) => prev.map((emp) => (emp.id === empId ? { ...emp, name: newName } : emp)));
+  };
+
+  const saveEmployeeName = async (empId: number) => {
+    const employee = employees.find(e => e.id === empId);
     if (employee) {
       try {
         await updateEmployee(empId, employee.uniform);
+        toast.success('Имя сохранено');
       } catch (error) {
         console.error('Failed to update employee name:', error);
+        toast.error('Не удалось сохранить имя');
         await loadEmployees(restaurant);
       }
     }
@@ -569,7 +572,13 @@ const Index = () => {
                           <TableCell className="p-2 md:p-4">
                             <Input
                               value={emp.name}
-                              onChange={(e) => updateEmployeeName(emp.id, e.target.value)}
+                              onChange={(e) => updateEmployeeNameLocal(emp.id, e.target.value)}
+                              onBlur={() => saveEmployeeName(emp.id)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.currentTarget.blur();
+                                }
+                              }}
                               className="font-medium border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary text-xs md:text-sm h-8 md:h-9"
                             />
                           </TableCell>
