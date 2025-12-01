@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { fetchEmployees, updateEmployee, createEmployee, deleteEmployee } from '@/utils/db';
+import { fetchEmployees, createEmployee, deleteEmployee, saveEmployees } from '@/utils/storage';
 
 type UniformCondition = 'good' | 'bad' | 'needs_replacement';
 type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | '1' | '2' | '3' | 'needed' | 'not_needed';
@@ -139,12 +139,7 @@ const Index = () => {
     loadEmployees(restaurant);
   }, [restaurant, loadEmployees]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      loadEmployees(restaurant);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [restaurant, loadEmployees]);
+
 
   const getConditionForMonth = (item: UniformItem, month: string): UniformCondition | null => {
     const record = item.monthlyRecords.find(r => r.month === month);
@@ -191,26 +186,14 @@ const Index = () => {
     
     setEmployees(updatedEmployees);
     
-    const employee = updatedEmployees.find(e => e.id === empId);
-    if (employee) {
-      const success = await updateEmployee(empId, employee.uniform);
-      if (success) {
-        toast.success('Состояние обновлено');
-      } else {
-        toast.error('Не удалось сохранить изменения');
-        await loadEmployees(restaurant);
-      }
-    }
+    saveEmployees(restaurant, updatedEmployees);
+    toast.success('Состояние обновлено');
   };
 
-  const updateEmployeeName = async (empId: number, newName: string) => {
+  const updateEmployeeNameHandler = async (empId: number, newName: string) => {
     const updatedEmployees = employees.map((emp) => (emp.id === empId ? { ...emp, name: newName } : emp));
     setEmployees(updatedEmployees);
-    
-    const employee = updatedEmployees.find(e => e.id === empId);
-    if (employee) {
-      await updateEmployee(empId, employee.uniform);
-    }
+    saveEmployees(restaurant, updatedEmployees);
   };
 
   const addEmployee = async () => {
@@ -219,19 +202,13 @@ const Index = () => {
     if (result) {
       await loadEmployees(restaurant);
       toast.success('Сотрудник добавлен');
-    } else {
-      toast.error('Не удалось добавить сотрудника');
     }
   };
 
   const deleteEmployeeHandler = async (empId: number) => {
-    const success = await deleteEmployee(empId);
-    if (success) {
-      await loadEmployees(restaurant);
-      toast.success('Сотрудник удален');
-    } else {
-      toast.error('Не удалось удалить сотрудника');
-    }
+    await deleteEmployee(restaurant, empId);
+    await loadEmployees(restaurant);
+    toast.success('Сотрудник удален');
   };
 
   const updateSize = async (empId: number, uniformType: keyof Employee['uniform'], size: Size) => {
@@ -250,10 +227,7 @@ const Index = () => {
     
     setEmployees(updatedEmployees);
     
-    const employee = updatedEmployees.find(e => e.id === empId);
-    if (employee) {
-      await updateEmployee(empId, employee.uniform);
-    }
+    saveEmployees(restaurant, updatedEmployees);
   };
 
   const exportToExcel = () => {
@@ -550,7 +524,7 @@ const Index = () => {
                           <TableCell className="p-2 md:p-4 min-w-[120px] md:min-w-[150px]">
                             <Input
                               value={emp.name}
-                              onChange={(e) => updateEmployeeName(emp.id, e.target.value)}
+                              onChange={(e) => updateEmployeeNameHandler(emp.id, e.target.value)}
                               className="font-medium border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary text-sm md:text-base h-8 md:h-9 w-full"
                             />
                           </TableCell>
