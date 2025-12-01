@@ -276,8 +276,6 @@ const Index = () => {
   };
 
   const exportToExcel = () => {
-    const data: any[] = [];
-    
     const sizeLabels: Record<Size, string> = {
       'XS': 'XS',
       'S': 'S',
@@ -291,32 +289,44 @@ const Index = () => {
       'not_needed': 'Не нужно'
     };
     
-    employees.forEach((emp) => {
-      const record = getConditionForMonth(emp.uniform.tshirt, selectedMonth);
-      const row: any = {
-        'Имя сотрудника': emp.name,
-        'Месяц': selectedMonth,
-      };
+    const wb = XLSX.utils.book_new();
+    
+    MONTHS.forEach((month) => {
+      const data: any[] = [];
+      
+      employees.forEach((emp) => {
+        const row: any = {
+          'Имя сотрудника': emp.name,
+        };
 
-      (['tshirt', 'pants', 'jacket', 'badge'] as const).forEach((type) => {
-        const item = emp.uniform[type];
-        const record = item.monthlyRecords.find(r => r.month === selectedMonth);
-        const condition = record?.condition;
-        row[uniformLabels[type]] = condition ? conditionLabels[condition] : 'Не заполнено';
-        row[`${uniformLabels[type]} - Размер`] = sizeLabels[item.size] || item.size;
-        if (condition === 'needs_replacement' && record?.issueDate) {
-          row[`${uniformLabels[type]} - Дата выдачи`] = record.issueDate;
-        }
+        (['tshirt', 'pants', 'jacket', 'badge'] as const).forEach((type) => {
+          const item = emp.uniform[type];
+          const record = item.monthlyRecords.find(r => r.month === month);
+          const condition = record?.condition;
+          row[uniformLabels[type]] = condition ? conditionLabels[condition] : 'Не заполнено';
+          row[`${uniformLabels[type]} - Размер`] = sizeLabels[item.size] || item.size;
+          if (condition === 'needs_replacement' && record?.issueDate) {
+            row[`${uniformLabels[type]} - Дата выдачи`] = record.issueDate;
+          }
+        });
+
+        data.push(row);
       });
 
-      data.push(row);
+      const ws = XLSX.utils.json_to_sheet(data);
+      XLSX.utils.book_append_sheet(wb, ws, month);
     });
-
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, selectedMonth);
-    XLSX.writeFile(wb, `Отчет_${selectedMonth}_${new Date().toLocaleDateString('ru-RU')}.xlsx`);
-    toast.success('Отчет экспортирован в Excel');
+    
+    const restaurantNames = {
+      'port': 'Порт',
+      'dickens': 'Диккенс',
+      'bar': 'Бар',
+      'hookah': 'Кальянная',
+      'runners': 'Раннерс'
+    };
+    
+    XLSX.writeFile(wb, `Отчет_${restaurantNames[restaurant]}_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.xlsx`);
+    toast.success('Отчет за все месяцы экспортирован в Excel');
   };
 
   const stats = {
@@ -495,11 +505,18 @@ const Index = () => {
                       {loading ? 'Загрузка данных...' : 'Отслеживайте состояние формы каждого сотрудника'}
                     </CardDescription>
                   </div>
-                  <Button onClick={addEmployee} className={`flex items-center gap-1.5 md:gap-2 text-xs md:text-sm w-full sm:w-auto ${isDickens ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : isHookah ? 'bg-[#0f172a] hover:bg-[#020617]' : isRunners ? 'bg-[#4a3520] hover:bg-[#2d1f12]' : isBar ? 'bg-[#0d5c3a] hover:bg-[#094d2e]' : ''}`} size="sm" disabled={loading}>
-                    <Icon name="UserPlus" size={16} className="md:w-[18px] md:h-[18px]" />
-                    <span className="hidden sm:inline">Добавить сотрудника</span>
-                    <span className="sm:hidden">Добавить</span>
-                  </Button>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <Button onClick={exportToExcel} variant="outline" className={`flex items-center gap-1.5 md:gap-2 text-xs md:text-sm flex-1 sm:flex-initial ${isDickens || isHookah ? 'border-white/20 text-gray-700 hover:bg-gray-100' : isRunners ? 'border-[#4a3520]/20 text-gray-700 hover:bg-gray-100' : isBar ? 'border-[#0d5c3a]/20 text-gray-700 hover:bg-gray-100' : ''}`} size="sm" disabled={loading}>
+                      <Icon name="Download" size={16} className="md:w-[18px] md:h-[18px]" />
+                      <span className="hidden sm:inline">Скачать Excel</span>
+                      <span className="sm:hidden">Excel</span>
+                    </Button>
+                    <Button onClick={addEmployee} className={`flex items-center gap-1.5 md:gap-2 text-xs md:text-sm flex-1 sm:flex-initial ${isDickens ? 'bg-[#1e3a5f] hover:bg-[#2c5282]' : isHookah ? 'bg-[#0f172a] hover:bg-[#020617]' : isRunners ? 'bg-[#4a3520] hover:bg-[#2d1f12]' : isBar ? 'bg-[#0d5c3a] hover:bg-[#094d2e]' : ''}`} size="sm" disabled={loading}>
+                      <Icon name="UserPlus" size={16} className="md:w-[18px] md:h-[18px]" />
+                      <span className="hidden sm:inline">Добавить сотрудника</span>
+                      <span className="sm:hidden">Добавить</span>
+                    </Button>
+                  </div>
                 </div>
                 <div className="flex flex-col md:flex-row gap-2 md:gap-4 mt-3 md:mt-4">
                   <div className="flex-1">
