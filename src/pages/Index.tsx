@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { fetchEmployees, createEmployee, deleteEmployee, updateEmployee, saveToStorage, exportAllData, importAllData } from '@/utils/direct-db';
+import { fetchEmployees, createEmployee, deleteEmployee, updateEmployee } from '@/utils/api';
 
 type UniformCondition = 'good' | 'bad';
 type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | '1' | '2' | '3' | 'needed' | 'not_needed';
@@ -194,9 +194,8 @@ const Index = () => {
     
     const employee = updatedEmployees.find(e => e.id === empId);
     if (employee) {
-      await updateEmployee(restaurant, empId, employee.uniform);
+      await updateEmployee(empId, employee.uniform);
     }
-    saveToStorage(restaurant, updatedEmployees);
     toast.success('Состояние обновлено');
   };
 
@@ -206,26 +205,23 @@ const Index = () => {
     
     const employee = updatedEmployees.find(e => e.id === empId);
     if (employee) {
-      await updateEmployee(restaurant, empId, employee.uniform);
+      await updateEmployee(empId, employee.uniform);
     }
-    saveToStorage(restaurant, updatedEmployees);
   };
 
   const addEmployee = async () => {
     const newId = Math.max(...employees.map(e => e.id), 0) + 1;
     const result = await createEmployee(restaurant, `Сотрудник ${newId}`);
     if (result) {
-      const updatedEmployees = [...employees, result];
-      setEmployees(updatedEmployees);
+      await loadEmployees(restaurant);
       toast.success('Сотрудник добавлен');
     }
   };
 
   const deleteEmployeeHandler = async (empId: number) => {
-    const success = await deleteEmployee(restaurant, empId);
+    const success = await deleteEmployee(empId);
     if (success) {
-      const updatedEmployees = employees.filter(e => e.id !== empId);
-      setEmployees(updatedEmployees);
+      await loadEmployees(restaurant);
       toast.success('Сотрудник удален');
     }
   };
@@ -248,37 +244,8 @@ const Index = () => {
     
     const employee = updatedEmployees.find(e => e.id === empId);
     if (employee) {
-      await updateEmployee(restaurant, empId, employee.uniform);
+      await updateEmployee(empId, employee.uniform);
     }
-    saveToStorage(restaurant, updatedEmployees);
-  };
-
-  const handleExportData = () => {
-    exportAllData(restaurant);
-    toast.success('Данные экспортированы в файл');
-  };
-
-  const handleImportData = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/json';
-    input.onchange = (e: any) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event: any) => {
-          const success = importAllData(restaurant, event.target.result);
-          if (success) {
-            loadEmployees(restaurant);
-            toast.success('Данные импортированы успешно!');
-          } else {
-            toast.error('Ошибка импорта данных');
-          }
-        };
-        reader.readAsText(file);
-      }
-    };
-    input.click();
   };
 
   const exportToExcel = () => {
@@ -493,17 +460,6 @@ const Index = () => {
               <div className={`text-2xl md:text-3xl font-bold ${isDickens ? 'text-[#1e3a5f]' : isHookah ? 'text-[#0f172a]' : isRunners ? 'text-[#4a3520]' : isBar ? 'text-[#0d5c3a]' : 'text-[#FF8C00]'}`}>{stats.needsReplacement}</div>
             </CardContent>
           </Card>
-        </div>
-
-        <div className="flex flex-wrap gap-3 mb-6 justify-center">
-          <Button onClick={handleExportData} variant="outline" className="flex items-center gap-2">
-            <Icon name="Download" size={18} />
-            Скачать данные
-          </Button>
-          <Button onClick={handleImportData} variant="outline" className="flex items-center gap-2">
-            <Icon name="Upload" size={18} />
-            Загрузить данные
-          </Button>
         </div>
 
         <Tabs defaultValue="inventory" className="w-full">
