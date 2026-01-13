@@ -215,15 +215,19 @@ const Index = () => {
     const newId = Math.max(...employees.map(e => e.id), 0) + 1;
     const result = await createEmployee(restaurant, `Сотрудник ${newId}`);
     if (result) {
-      await loadEmployees(restaurant);
+      const updatedEmployees = [...employees, result];
+      setEmployees(updatedEmployees);
       toast.success('Сотрудник добавлен');
     }
   };
 
   const deleteEmployeeHandler = async (empId: number) => {
-    await deleteEmployee(restaurant, empId);
-    await loadEmployees(restaurant);
-    toast.success('Сотрудник удален');
+    const success = await deleteEmployee(restaurant, empId);
+    if (success) {
+      const updatedEmployees = employees.filter(e => e.id !== empId);
+      setEmployees(updatedEmployees);
+      toast.success('Сотрудник удален');
+    }
   };
 
   const updateSize = async (empId: number, uniformType: keyof Employee['uniform'], size: Size) => {
